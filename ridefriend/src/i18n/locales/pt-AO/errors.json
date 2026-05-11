@@ -1,0 +1,13 @@
+{
+  "error": "Erro",
+  "error_occurred": "Ocorreu um erro",
+  "invalid_phone": "Número de telefone inválido",
+  "invalid_code": "Código inválido",
+  "network_error": "Erro de rede",
+  "permission_denied": "Permissão negada",
+  "location_not_available": "Localização não disponível",
+  "try_again": "Tente novamente",
+  "server_error": "Erro do servidor",
+  "timeout": "Tempo limite excedido",
+  "something_wrong": "Algo correu mal"
+}

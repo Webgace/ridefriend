@@ -1,0 +1,51 @@
+# Dependências
+node_modules/
+.pnp/
+.pnp.js
+
+# Build / dist
+dist/
+build/
+.expo/
+.expo-shared/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ambientes (NUNCA commitar — contêm chaves)
+.env
+.env.local
+.env.*.local
+ridefriend/.env
+backend/.env
+
+# Cobertura de testes
+coverage/
+
+# IDEs / editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Expo
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Cache local de MMKV / SQLite (caso seja serializado em dev)
+*.mmkv
+*.sqlite
+*.sqlite-journal

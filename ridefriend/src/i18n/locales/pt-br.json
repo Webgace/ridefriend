@@ -1,0 +1,112 @@
+{
+  "common": {
+    "app_name": "RideFriend",
+    "welcome": "Bem-vindo ao RideFriend",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "ok": "OK",
+    "back": "Voltar",
+    "next": "Próximo",
+    "skip": "Pular",
+    "save": "Salvar",
+    "delete": "Deletar",
+    "edit": "Editar",
+    "logout": "Sair",
+    "settings": "Configurações",
+    "language": "Idioma",
+    "market": "Mercado",
+    "currency": "Moeda"
+  },
+  "auth": {
+    "phone_input_title": "Seu número de telefone",
+    "phone_input_description": "Usaremos isto para verificar sua identidade e criar sua conta.",
+    "phone_placeholder": "Insira seu número de telefone",
+    "phone_invalid": "Número de telefone inválido",
+    "continue": "Continuar",
+    "otp_title": "Verificar número",
+    "otp_description": "Enviamos um código para {{phone}}",
+    "otp_placeholder": "Insira o código",
+    "otp_resend": "Reenviar código",
+    "otp_invalid": "Código inválido",
+    "verify": "Verificar",
+    "onboarding_title": "Dados pessoais",
+    "name_placeholder": "Seu nome completo",
+    "email_placeholder": "Seu email (opcional)",
+    "terms_agreement": "Concordo com os Termos de Serviço",
+    "complete_profile": "Completar Perfil"
+  },
+  "home": {
+    "title": "Início",
+    "where_to": "Para onde você vai?",
+    "nearby_drivers": "Motoristas próximos",
+    "recent_rides": "Viagens recentes",
+    "book_ride": "Agendar viagem"
+  },
+  "map": {
+    "title": "Mapa",
+    "my_location": "Minha localização",
+    "drivers_nearby": "Motoristas próximos",
+    "passengers_nearby": "Passageiros próximos",
+    "view_profile": "Ver perfil",
+    "distance": "Distância: {{distance}}km"
+  },
+  "network": {
+    "title": "Rede",
+    "contacts": "Contatos",
+    "favorites": "Favoritos",
+    "recent": "Recentes",
+    "all": "Todos",
+    "no_contacts": "Nenhum contato ainda",
+    "add_contact": "Adicionar contato"
+  },
+  "profile": {
+    "title": "Perfil",
+    "edit_profile": "Editar Perfil",
+    "rating": "Avaliação",
+    "rides": "Viagens",
+    "joined": "Membro desde {{date}}",
+    "payment_methods": "Métodos de Pagamento",
+    "preferences": "Preferências",
+    "support": "Suporte",
+    "about": "Sobre"
+  },
+  "rides": {
+    "status_pending": "Pendente",
+    "status_accepted": "Aceita",
+    "status_in_progress": "Em andamento",
+    "status_completed": "Completa",
+    "status_cancelled": "Cancelada",
+    "pickup": "Busca",
+    "dropoff": "Destino",
+    "fare": "Tarifa",
+    "duration": "Duração",
+    "distance": "Distância",
+    "rate_ride": "Avaliar viagem",
+    "cancel_ride": "Cancelar viagem",
+    "share_location": "Compartilhar localização"
+  },
+  "market_select": {
+    "title": "Escolha seu mercado",
+    "description": "Selecione o país onde você deseja usar o RideFriend",
+    "select": "Selecionar {{country}}"
+  },
+  "payment": {
+    "payment_method": "Método de Pagamento",
+    "add_card": "Adicionar Cartão",
+    "cash": "Dinheiro",
+    "card": "Cartão",
+    "wallet": "Carteira",
+    "mpesa": "M-Pesa",
+    "vodacom": "Vodacom",
+    "em_money": "eMoney"
+  },
+  "notifications": {
+    "ride_accepted": "Sua viagem foi aceita!",
+    "driver_arriving": "Motorista chegando em {{minutes}} minutos",
+    "ride_completed": "Viagem concluída",
+    "rating_received": "Você recebeu uma avaliação"
+  }
+}

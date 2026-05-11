@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "RideFriend",
+    "slug": "ridefriend",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0D1F38"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTabletMode": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "RideFriend needs access to your location to show nearby drivers and passengers.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "RideFriend needs access to your location to show nearby drivers and passengers.",
+        "NSCameraUsageDescription": "RideFriend needs camera access for profile pictures and vehicle photos.",
+        "NSPhotoLibraryUsageDescription": "RideFriend needs access to your photo library to upload images.",
+        "NSPhotoLibraryAddUsageDescription": "RideFriend needs access to save photos to your photo library."
+      },
+      "bundleIdentifier": "com.friendride.app",
+      "scheme": "ridefriend"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D1F38"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "package": "com.friendride.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": {
+            "scheme": "ridefriend"
+          },
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "ridefriend",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow RideFriend to access your location to show nearby drivers and passengers."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#D97706"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow RideFriend to access your photos.",
+          "cameraPermission": "Allow RideFriend to access your camera."
+        }
+      ]
+    ]
+  }
+}

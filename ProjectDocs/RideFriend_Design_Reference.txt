@@ -1,0 +1,406 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║     RIDEFRIEND · REFERÊNCIA DE DESIGN                                      ║
+║     Complemento ao Prompt 0 — colar como ficheiro no Claude Project        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+COMO USAR ESTE DOCUMENTO
+─────────────────────────
+1. No Claude Project "RideFriend Dev", clicar em "Add content" ou "Upload file"
+2. Fazer upload do ficheiro ridefriend.html (o mockup funcional)
+3. Fazer upload deste ficheiro .txt como referência de design textual
+4. O Claude terá acesso ao HTML completo E a estas notas em cada sessão
+
+Com o HTML no projecto, podes dizer em qualquer prompt:
+  "Usa o design do mockup como referência"
+  "O componente X deve ter o estilo do card de motorista no mockup"
+  "Mantém a mesma hierarquia visual do ecrã principal"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REFERÊNCIA COMPLETA DE DESIGN — RideFriend
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IDENTIDADE VISUAL
+──────────────────
+Nome da app      : RideFriend
+Logótipo         : texto "RideFriend" com ponto âmbar antes da letra R
+Fonte principal  : Sora (headings, logo, números grandes) — peso 700/800
+Fonte de corpo   : DM Sans (todo o resto) — peso 400/500/600
+Tom geral        : profissional mas acessível; não corporativo; não infantil
+Sensação         : "app de confiança entre pessoas que se conhecem"
+
+
+PALETA DE CORES EXACTA
+───────────────────────
+--navy        : #0D1F38   ← cor primária, headers, botões principais, texto
+--navy2       : #162E52   ← variante escura do navy (hover states)
+--amber       : #D97706   ← cor de destaque/acção (botão Estou Aqui!, logo dot)
+--amber-light : #FEF7E6   ← fundo de avisos/callouts âmbar
+--green       : #10B981   ← sucesso, online, ETA próximo, confirmado
+--green-light : #D1FAE5   ← fundo de estados de sucesso
+--red         : #EF4444   ← SOS, erros críticos, cancelamento
+--red-light   : #FEE2E2   ← fundo de alertas de erro
+--surface     : #F2F5FB   ← fundo geral da app (não branco puro)
+--white       : #FFFFFF   ← fundo de cards e modais
+--text        : #0D1F38   ← texto principal (mesmo que navy)
+--text2       : #4B5775   ← texto secundário (subtítulos, metadados)
+--text3       : #94A3B8   ← texto terciário (placeholders, timestamps)
+--border      : #E2E8F2   ← bordas de cards e separadores
+
+
+BORDER RADIUS
+──────────────
+Botões pill/tag : 999px  (totalmente redondo)
+Cards pequenos  : 14px
+Cards médios    : 20px
+Cards grandes   : 28px
+Phone frame     : 50px   (moldura do telemóvel no mockup)
+Avatares        : 50%    (sempre círculo)
+Bottom sheets   : 30px 30px 0 0 (só cantos superiores)
+
+
+SOMBRAS
+────────
+Cards normais   : box-shadow: 0 4px 14px rgba(37,99,235,0.10) (tom azulado)
+Cards elevated  : box-shadow: 0 6px 20px rgba(13,31,56,0.15)
+Botão âmbar     : box-shadow: 0 6px 18px rgba(245,158,11,0.35)
+Botão SOS       : box-shadow: 0 6px 20px rgba(239,68,68,0.50)
+Phone frame     : box-shadow: 0 40px 80px rgba(13,31,56,0.30)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMPONENTES — DESCRIÇÃO DETALHADA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. STATUS BAR
+   ─────────────
+   Fundo branco. Hora à esquerda (bold 14px). Ícones à direita
+   (sinal, wifi, bateria). Font-weight 600. Padding 14px top, 24px lados.
+
+
+2. APP HEADER
+   ────────────
+   Fundo branco. Border-bottom 1px #E2E8F2.
+   Linha 1: Logo "● RideFriend" (● é o ponto âmbar #D97706, 10px)
+            + botões de acção à direita (círculos 38px, fundo #F2F5FB)
+            Botões: sino (notificações com badge vermelho), QR, avatar do user
+   Linha 2: Toggle Passageiro/Motorista (ver abaixo)
+
+
+3. TOGGLE PASSAGEIRO / MOTORISTA
+   ─────────────────────────────────
+   Contentor: fundo #F2F5FB, border-radius 50px, padding 4px
+   Tab activa: fundo #0D1F38, texto branco, font-weight 700, sombra suave
+   Tab inactiva: sem fundo, texto #4B5775, font-weight 600
+   Cada tab tem ícone + texto. Transição 0.2s.
+
+
+4. HERO LOCATION CARD (cartão de localização no topo)
+   ─────────────────────────────────────────────────────
+   Gradiente: #0D1F38 → #1E3A8A (diagonal 135deg)
+   Border-radius: 28px. Padding: 18px 20px.
+   Cor do texto: branco.
+   
+   Estrutura:
+   - Label superior: texto pequeno uppercase (12px, opacity 60%, ícone pin)
+     "PARAGEM ACTUAL"
+   - Nome da paragem: Sora 19px bold, ícone de autocarro âmbar
+   - Pills de metadados: fundo rgba(255,255,255,0.12), border-radius 20px
+     Pills: tempo de espera (âmbar), nº conhecidos próximos (verde), temperatura
+   
+   Detalhe visual: dois círculos decorativos em rgba(245,158,11,0.12) nos
+   cantos superior direito e inferior direito (posição absolute, overflow hidden)
+
+
+5. BOTÃO "ESTOU AQUI!" / ALERT BUTTON
+   ──────────────────────────────────────
+   Fundo: #D97706 (âmbar). Texto: #0D1F38 (navy). Font: Sora 15px bold.
+   Border-radius: 20px. Padding: 14px 20px. Width: 100%.
+   Box-shadow: 0 6px 18px rgba(245,158,11,0.35)
+   
+   Efeito de pulso: anel animado (pulse-ring) com keyframes:
+   0% { transform: scale(1); opacity: 0.6 }
+   100% { transform: scale(1.06); opacity: 0 }
+   
+   Estado "enviado":
+   - Fundo muda para #10B981 (verde)
+   - Ícone muda para checkmark
+   - Texto: "Rede Alertada! · X contactos notificados"
+   - Reverte após 5 segundos
+
+
+6. DRIVER CARD (card de motorista na lista)
+   ─────────────────────────────────────────
+   Fundo: #FFFFFF. Border: 1px solid #E2E8F2. Border-radius: 20px.
+   Padding: 14px. Display: flex, align-items: center. Gap: 12px.
+   Hover: border-color #93C5FD, background #EFF6FF
+   
+   Estado "approaching" (ETA ≤ 2min):
+   - Border: 1px solid #6EE7B7
+   - Background: #F0FDF4
+   
+   Estrutura interna:
+   ┌─────────────────────────────────────────────────────────────┐
+   │ [AVATAR]  [NOME + TAG RELAÇÃO]                [BOTÕES]     │
+   │           [DISTÂNCIA · MATRÍCULA]                          │
+   │           [ETA BADGE] [RATING]                             │
+   │           [APPROACH BAR — se ETA ≤ 5min]                  │
+   └─────────────────────────────────────────────────────────────┘
+   
+   AVATAR (46×46px, circle):
+   - Inicial do nome, Sora 18px bold
+   - Cores por grupo: Família=âmbar-light, Amigo=verde-light,
+     Colega=azul-light, Vizinho=roxo-light
+   - Dot de estado (12px, absolute bottom-right, border 2px white):
+     online=verde, ocupado=âmbar, offline=cinza
+   
+   ETIQUETA DE RELAÇÃO (tag pill):
+   - Família: fundo #FEE2E2, texto #991B1B
+   - Amigo:   fundo #DBEAFE, texto #1E40AF
+   - Colega:  fundo #F3E8FF, texto #6B21A8
+   - Vizinho: fundo #D1FAE5, texto #065F46
+   Font-size: 11px. Padding: 2px 8px. Border-radius: 20px.
+   
+   ETA BADGE:
+   - ≤ 2min: fundo #D1FAE5, texto #065F46, animação blink (opacity 0.6↔1)
+   - 3-8min: fundo #FEF3C7, texto #92400E
+   - >8min:  fundo #F1F5F9, texto #94A3B8
+   Font: 11px bold. Padding: 2px 8px. Border-radius: 20px.
+   
+   APPROACH BAR:
+   - Altura: 4px. Background: #E2E8F2. Border-radius: 2px.
+   - Fill: #10B981 (verde). Transição: width 1s linear.
+   
+   BOTÕES no card:
+   - Botão ícone (telefone): 34×34px circle, fundo surface, border
+   - Botão "Pedir": fundo #0D1F38, texto branco, border-radius 20px,
+     padding 8px 12px, font 12px bold
+
+
+7. AVATARES
+   ──────────
+   Todos os avatares têm a mesma estrutura base:
+   - Círculo com cor de fundo pastel + inicial do nome em Sora bold
+   - Online dot: 12px circle, absolute bottom-right, border 2px white
+   Cores disponíveis:
+   - blue:   fundo #EFF6FF, texto #1D4ED8
+   - amber:  fundo #FEF3C7, texto #92400E
+   - green:  fundo #D1FAE5, texto #065F46
+   - purple: fundo #EDE9FE, texto #5B21B6
+
+
+8. BOTTOM NAVIGATION
+   ─────────────────────
+   Fundo branco. Border-top 1px #E2E8F2.
+   4 tabs: Início (casa), Mapa, Rede (pessoas), Histórico (relógio)
+   
+   Tab activa:
+   - Ícone: cor #0D1F38
+   - Label: cor #0D1F38, font 10px bold
+   - Pip âmbar (5×5px circle) abaixo do label
+   
+   Tab inactiva:
+   - Ícone + label: cor #94A3B8
+   - Sem pip
+   
+   Padding: 10px top, 20px bottom (safe area).
+   Cada tab: flex-direction column, align-items center, gap 4px.
+
+
+9. BOTÃO SOS
+   ──────────
+   Posição: absolute, bottom 85px, right 18px. z-index: 20.
+   Círculo 48×48px. Fundo #EF4444. Texto "SOS" branco, 11px, bold.
+   Box-shadow: 0 6px 20px rgba(239,68,68,0.50)
+   Scale 1.08 no hover. Letra-spacing: 0.05em.
+
+
+10. BOTTOM SHEET MODAL
+    ───────────────────
+    Overlay: rgba(13,31,56,0.55) com backdrop-filter blur(4px)
+    Sheet: fundo branco, border-radius 30px 30px 0 0
+    Handle: 36×4px, fundo #E2E8F2, centrado, margin-bottom 18px
+    Animação: slide-up (translateY 100% → 0) em 0.3s ease
+    Fechar: tap no overlay fecha o sheet
+
+
+11. TOAST NOTIFICATION
+    ────────────────────
+    Posição: absolute, bottom 95px, left 50%, transform translateX(-50%)
+    Fundo: #0D1F38. Texto branco 13px. Border-radius: 30px.
+    Padding: 11px 18px. White-space: nowrap.
+    Box-shadow: 0 8px 24px rgba(13,31,56,0.30)
+    Animação aparece: opacity 0→1 + translateY 20px→0 em 0.3s
+    Desaparece: após 2.5 segundos
+
+
+12. SECTION HEADERS
+    ─────────────────
+    Display flex, justify-content space-between, align-items center.
+    Título: Sora 16px bold, ícone + texto, cor #0D1F38
+    Contador (pill): fundo #0D1F38, texto branco, 11px bold, padding 3px 9px
+    Link "Ver mais": 13px, cor #D97706 (âmbar), bold
+
+
+13. MODO MOTORISTA — STATUS CARD
+    ───────────────────────────────
+    Fundo branco. Border 1px #E2E8F2. Border-radius 20px. Padding 16px.
+    
+    Linha de status:
+    - Label "Estado: Disponível" (Sora 15px bold, "Disponível" em verde)
+    - Toggle switch (52×28px): ON=verde #10B981, OFF=cinza #E2E8F2
+      Knob: 22×22px branco, sombra, transição left 0.2s
+    
+    Linha de rota (abaixo, separada por border-top):
+    - Coluna de dots: dot verde (origem) + linha vertical + dot navy (destino)
+    - Texto origem e destino (14px bold)
+    - Distância à direita (16px bold navy)
+
+
+14. MAPA
+    ──────
+    Fundo base: #DDE6F0 (azul claro que simula o OSM)
+    Blocos/edifícios: #C8D6EA (ligeiramente mais escuro)
+    Estradas: branco (#FFFFFF) com largura variável
+    
+    Marcadores no mapa:
+    - "Tu" (utilizador): círculo âmbar com anel de pulso animado
+      Core: 7px âmbar. Anel 1: opacity 0.8→0, r 8→22. Animação 2s.
+    - Motorista: círculo azul com animação de movimento entre sessões
+    - Passageiro: círculo roxo
+    
+    Legenda: fundo rgba(255,255,255,0.92), border-radius 12px,
+    dots coloridos + label. Posição: bottom-left.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PADRÕES DE INTERACÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FEEDBACK VISUAL IMEDIATO
+  Todo o botão ou card tocável deve ter feedback visual em <100ms.
+  Em React Native: usar TouchableOpacity com activeOpacity=0.8
+  ou Pressable com scale animation 0.97 no press.
+
+ESTADOS DE LOADING
+  Nunca mostrar um ecrã vazio sem indicação de carregamento.
+  Usar skeleton screens (rectangulos cinzentos animados) em vez
+  de spinner central quando há lista de cards a carregar.
+  ActivityIndicator só para acções pontuais (enviar pedido, confirmar).
+
+TOASTS VS ALERTS
+  Toast (fundo navy, no fundo do ecrã): para feedback de acções
+  que não requerem resposta do utilizador.
+  Bottom Sheet: para confirmações que requerem decisão.
+  Nunca usar Alert.alert() nativo — quebra o design.
+
+ANIMAÇÕES
+  Duração: 200-300ms para micro-interacções, 300ms para modais/sheets.
+  Easing: ease para entrada, ease-in para saída.
+  Reanimated: usar para animações de performance crítica
+  (ex: approach bar, marcadores no mapa, toggle switch).
+
+HIERARQUIA DE TIPOGRAFIA
+  Título de ecrã      : Sora 22px bold, cor navy
+  Título de secção    : Sora 16-17px bold, cor navy
+  Nome de pessoa/lugar: DM Sans 15-16px semi-bold, cor navy
+  Metadados/subtítulo : DM Sans 12-13px regular, cor text2 (#4B5775)
+  Etiquetas/pills     : DM Sans 11px semi-bold
+  Labels tiny         : DM Sans 10px bold uppercase, letter-spacing 0.07em
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ECRÃS — ESTRUTURA DE LAYOUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ECRÃ PRINCIPAL (Passageiro)
+  ┌────────────────────────────────┐
+  │ STATUS BAR                     │
+  │ HEADER (logo + botões + toggle)│
+  ├────────────────────────────────┤
+  │ SCROLL AREA:                   │
+  │  • Hero Location Card          │
+  │  • Alert Button (âmbar)        │
+  │  • Section: Motoristas         │
+  │    - DriverCard × N            │
+  │  • Section: Outros na Paragem  │
+  │    - PassengerCard × N         │
+  │  • Footer: 2 botões outline    │
+  ├────────────────────────────────┤
+  │ BOTTOM NAV                     │
+  │                       [SOS] ←  │
+  └────────────────────────────────┘
+
+ECRÃ PRINCIPAL (Motorista)
+  ┌────────────────────────────────┐
+  │ STATUS BAR                     │
+  │ HEADER (logo + botões + toggle)│
+  ├────────────────────────────────┤
+  │ SCROLL AREA:                   │
+  │  • Driver Status Card          │
+  │    (toggle + rota definida)    │
+  │  • Section: Passageiros Rota   │
+  │    - PassengerOnRouteCard × N  │
+  │  • Botão "Partilhar Rota"      │
+  ├────────────────────────────────┤
+  │ BOTTOM NAV                     │
+  │                       [SOS] ←  │
+  └────────────────────────────────┘
+
+ECRÃ DE MAPA
+  ┌────────────────────────────────┐
+  │ STATUS BAR                     │
+  │ HEADER                         │
+  ├────────────────────────────────┤
+  │ MAPA (240px de altura)         │
+  │  marcadores animados           │
+  │  legenda bottom-left           │
+  │  zoom buttons top-right        │
+  ├────────────────────────────────┤
+  │ Section: Proximidade realtime  │
+  │  - DriverCard × N (pequenos)   │
+  ├────────────────────────────────┤
+  │ BOTTOM NAV                     │
+  └────────────────────────────────┘
+
+ECRÃ DE REDE
+  ┌────────────────────────────────┐
+  │ Header + toggle                │
+  ├────────────────────────────────┤
+  │ Banner navy "A Tua Rede"       │
+  │  + botão "+ Adicionar"         │
+  │ Group label: FAMÍLIA           │
+  │  - ContactCard × N             │
+  │ Group label: AMIGOS            │
+  │  - ContactCard × N             │
+  │ Group label: COLEGAS           │
+  │  - ContactCard × N             │
+  ├────────────────────────────────┤
+  │ BOTTOM NAV                     │
+  └────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMO REFERENCIAR O DESIGN NOS PROMPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Exemplos de como pedir ao Claude para usar o mockup como referência:
+
+  "Cria o componente DriverCard seguindo exactamente o design do mockup.
+   Ver o componente .driver-item no ficheiro ridefriend.html do projecto."
+
+  "O ecrã de perfil deve ter o mesmo estilo do .profile-hero no mockup:
+   fundo navy, avatar com borda âmbar, nome em Sora bold branco."
+
+  "Usa o mesmo padrão visual do HeroLocationCard do mockup para criar
+   o card de status do modo motorista."
+
+  "As animações devem seguir os keyframes do mockup: pulse-ring para
+   o botão de alerta, blink-green para o ETA badge próximo."
+
+  "O bottom sheet de confirmação deve ter o mesmo estilo de
+   .sheet + .sheet-overlay do ridefriend.html."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIM DO DOCUMENTO DE REFERÊNCIA DE DESIGN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

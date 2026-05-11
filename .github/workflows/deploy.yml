@@ -1,0 +1,87 @@
+# Ficheiro: .github/workflows/deploy.yml | Função: CI + deploy SSH para o VPS Hostinger (P9)
+name: Deploy RideFriend API
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build & test
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build TypeScript
+        run: npm run build
+
+  deploy:
+    name: Deploy to VPS
+    needs: build
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: SSH deploy
+        id: ssh
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            APP_DIR="/home/${{ secrets.VPS_USER }}/ridefriend"
+            cd "$APP_DIR"
+            PREV_SHA=$(git rev-parse HEAD)
+            git fetch --depth=1 origin main
+            git reset --hard origin/main
+            cd backend
+            if ! npm ci --omit=dev; then
+              echo "npm ci falhou — a reverter para $PREV_SHA"
+              cd "$APP_DIR" && git reset --hard "$PREV_SHA"
+              exit 1
+            fi
+            if ! npm run build; then
+              echo "build falhou — a reverter para $PREV_SHA"
+              cd "$APP_DIR" && git reset --hard "$PREV_SHA"
+              cd backend && npm ci --omit=dev && npm run build
+              pm2 reload ridefriend-api || true
+              exit 1
+            fi
+            pm2 reload ridefriend-api --update-env
+
+      - name: Notify (CallMeBot WhatsApp)
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          if [ "$STATUS" = "success" ]; then
+            EMOJI="✅"
+            TEXT="Deploy RideFriend OK · ${{ github.sha }}"
+          else
+            EMOJI="❌"
+            TEXT="Deploy RideFriend FALHOU · ${{ github.sha }}"
+          fi
+          MSG=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$EMOJI $TEXT")
+          curl -fsSL "https://api.callmebot.com/whatsapp.php?phone=${{ secrets.CALLMEBOT_PHONE }}&text=${MSG}&apikey=${{ secrets.CALLMEBOT_API_KEY }}" || true

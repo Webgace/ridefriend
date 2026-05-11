@@ -1,0 +1,868 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║           RIDEFRIEND · PROMPTS DE DESENVOLVIMENTO                          ║
+║           Versão 1.0 · Usar no Claude.ai (Projecto) ou VSCode              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+INSTRUÇÕES DE USO
+─────────────────
+1. Abrir https://claude.ai
+2. Criar um novo PROJECTO chamado "RideFriend Dev"
+3. Colar o PROMPT 0 (Contexto Base) como "Instruções do Projecto" no painel lateral
+4. A partir daí, usar os prompts P1 a P10 em mensagens separadas, na ordem indicada
+5. Guardar o código gerado em cada sessão antes de avançar para o próximo prompt
+
+O Claude mantém o contexto do projecto entre sessões — não precisas de repetir
+o Prompt 0 em cada mensagem.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 0 — CONTEXTO BASE DO PROJECTO
+(Colar em "Instruções do Projecto" no painel do Claude Project)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+És o arquitecto de software principal do projecto RideFriend. Tens acesso
+completo às especificações abaixo. Deves lembrar este contexto em todas as
+sessões deste projecto.
+
+PRODUTO
+-------
+RideFriend é uma aplicação móvel (iOS + Android) que conecta passageiros
+com motoristas da sua rede de confiança pessoal — família, amigos, colegas
+de trabalho e vizinhos. Quando um utilizador chega a uma paragem de autocarro,
+a app alerta automaticamente os motoristas conhecidos que estão próximos ou
+que passam naquela rota. Não é um serviço de transporte pago — é coordenação
+de boleias entre pessoas que já se conhecem.
+
+MERCADO PRIMÁRIO
+-----------------
+Angola (Luanda). Secundariamente: Moçambique, Brasil, Cabo Verde.
+Idioma da app: Português de Portugal.
+Moeda de referência: Kwanza (AOA). Preços em USD nos planos B2B.
+
+STACK TECNOLÓGICA DEFINITIVA
+------------------------------
+- Frontend Mobile : React Native 0.74+ com Expo SDK 51 (managed workflow)
+- Linguagem        : TypeScript (strict mode)
+- Navegação        : React Navigation 6 (Bottom Tabs + Stack)
+- Estado Global    : Zustand (simples, sem boilerplate)
+- Base de Dados    : Supabase (PostgreSQL + PostGIS para queries geográficas)
+- Realtime         : Supabase Realtime (canais por rede de contactos)
+- Auth             : Supabase Auth + OTP por SMS via AfricasTalking
+- Mapas            : react-native-maps com tiles OpenStreetMap (gratuito)
+- Notificações     : Expo Notifications + FCM (Android) + APNs (iOS)
+- Backend API      : Node.js 20 + Express + TypeScript (no VPS Hostinger)
+- ORM              : Prisma (type-safe queries)
+- Hosting          : Hostinger VPS KVM2 (Ubuntu 22.04), Nginx, PM2
+- CI/CD            : GitHub Actions → SSH deploy automático
+- SMS OTP Angola   : AfricasTalking API (operadores Unitel + Africell)
+
+SCHEMA DA BASE DE DADOS (Supabase/PostgreSQL)
+----------------------------------------------
+Tabelas:
+  users            id, phone, name, photo_url, home_area, is_driver,
+                   rating_avg, ride_count, expo_push_token, created_at
+
+  contacts         id, user_id, contact_user_id,
+                   group_type ENUM('family','friend','colleague','neighbour'),
+                   trust_level INT DEFAULT 1, created_at
+                   [UNIQUE (user_id, contact_user_id)]
+
+  locations        id, user_id, lat DECIMAL(10,8), lng DECIMAL(11,8),
+                   accuracy FLOAT, mode ENUM('passenger','driver'),
+                   is_active BOOL, heading FLOAT, speed FLOAT, updated_at
+                   [INDEX on (user_id, is_active, updated_at)]
+
+  rides            id, driver_id, passenger_id,
+                   status ENUM('requested','accepted','in_progress',
+                               'completed','cancelled'),
+                   origin_lat, origin_lng, dest_lat, dest_lng,
+                   distance_km FLOAT, started_at, ended_at, created_at
+
+  ratings          id, ride_id, rater_id, rated_id,
+                   score SMALLINT CHECK(score BETWEEN 1 AND 5),
+                   comment TEXT, created_at
+
+  notifications    id, user_id, type VARCHAR(50), payload JSONB,
+                   is_read BOOL DEFAULT false, created_at
+
+  sos_events       id, user_id, lat, lng, ride_id (nullable),
+                   emergency_contact_id, triggered_at, resolved_at
+
+PALETA DE CORES (usar em todo o código)
+----------------------------------------
+  Navy (primário)     : #0D1F38
+  Amber (destaque)    : #D97706
+  Verde (sucesso)     : #10B981
+  Vermelho (erro/SOS) : #EF4444
+  Superfície          : #F2F5FB
+  Texto primário      : #0D1F38
+  Texto secundário    : #4B5775
+  Bordo               : #E2E8F2
+
+CONVENÇÕES DE CÓDIGO
+---------------------
+- Todos os comentários em código: Português de Portugal
+- Nomes de variáveis e funções: camelCase em inglês (padrão JS/TS)
+- Nomes de ficheiros: kebab-case
+- Componentes React: PascalCase
+- Sempre tipar com TypeScript — evitar 'any'
+- Cada ficheiro deve ter no topo um comentário com: // Ficheiro: [nome] | Função: [descrição]
+- Usar async/await (não .then().catch())
+- Tratamento de erros sempre com try/catch e mensagens em português
+
+ESTRUTURA DE PASTAS DO PROJECTO
+---------------------------------
+ridefriend/
+  ├── app/                    ← Ecrãs (Expo Router) ou screens/
+  ├── src/
+  │   ├── components/         ← Componentes reutilizáveis
+  │   │   ├── ui/             ← Botões, Cards, Badges, Inputs
+  │   │   └── maps/           ← Componentes de mapa
+  │   ├── hooks/              ← Custom hooks (useLocation, useContacts, etc.)
+  │   ├── services/           ← Supabase, AfricasTalking, Notifications
+  │   ├── store/              ← Zustand stores
+  │   ├── types/              ← TypeScript interfaces e types
+  │   ├── utils/              ← Funções auxiliares (haversine, formatters, etc.)
+  │   └── constants/          ← Cores, configurações, enums
+  ├── backend/                ← API Node.js
+  │   ├── src/
+  │   │   ├── routes/
+  │   │   ├── controllers/
+  │   │   ├── middleware/
+  │   │   ├── services/
+  │   │   └── prisma/
+  │   └── ecosystem.config.js ← PM2
+  └── supabase/
+      └── migrations/         ← SQL migrations
+
+REGRAS DE DESENVOLVIMENTO
+--------------------------
+1. Sempre gerar código completo e funcional — sem placeholders "TODO"
+2. Cada ficheiro gerado deve poder ser copiado directamente para o projecto
+3. Incluir sempre os imports necessários no topo de cada ficheiro
+4. Quando gerar um componente, gerar também os seus tipos TypeScript
+5. Quando gerar um serviço, gerar também os seus testes unitários básicos
+6. Ao final de cada prompt, indicar os próximos ficheiros a criar
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 1 — SETUP INICIAL DO PROJECTO (Semana 1, Dia 1-2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria a estrutura base completa do projecto RideFriend. Gera os seguintes
+ficheiros prontos a usar, um a um, com conteúdo completo:
+
+1. package.json
+   - Nome: ridefriend, versão: 1.0.0
+   - Dependências: expo@51, react-native@0.74, typescript,
+     @react-navigation/native, @react-navigation/bottom-tabs,
+     @react-navigation/stack, react-native-screens, react-native-safe-area-context,
+     @supabase/supabase-js, react-native-maps, expo-location,
+     expo-notifications, expo-secure-store, zustand, react-native-mmkv,
+     @tanstack/react-query, react-native-gesture-handler,
+     react-native-reanimated, expo-image-picker, react-native-phone-number-input
+   - devDependências: @types/react, @types/react-native, eslint, prettier
+
+2. tsconfig.json
+   - strict mode activado
+   - path aliases: @components, @hooks, @services, @store, @types, @utils, @constants
+
+3. src/constants/theme.ts
+   - Todas as cores definidas no contexto base
+   - Tipografia: tamanhos (xs:11, sm:13, md:15, lg:17, xl:20, xxl:24, xxxl:30)
+   - Espaçamentos: (xs:4, sm:8, md:12, lg:16, xl:24, xxl:32)
+   - Border radius: (sm:8, md:14, lg:20, xl:28, full:999)
+   - Sombras: light, medium, heavy
+
+4. src/types/index.ts
+   - Interface User (todos os campos da tabela users)
+   - Interface Contact (campos da tabela contacts + dados do contacto)
+   - Interface Location (campos da tabela locations)
+   - Interface Ride (campos da tabela rides)
+   - Interface Rating (campos da tabela ratings)
+   - Interface Notification (campos da tabela notifications)
+   - Type RideStatus, ContactGroup, LocationMode (enums das tabelas)
+   - Interface NearbyDriver (User + distância calculada + ETA estimado)
+   - Interface NearbyPassenger (User + paragem detectada + tempo de espera)
+
+5. src/services/supabase.ts
+   - Cliente Supabase configurado com variáveis de ambiente
+   - Função getSession(), getUser()
+   - Helper typed: supabase.from<User>('users')
+   - Export do cliente para uso em toda a app
+
+6. src/store/authStore.ts (Zustand)
+   - Estado: user, session, isLoading, isAuthenticated
+   - Acções: setUser, setSession, signOut, updateProfile
+   - Persistência com expo-secure-store para o token
+
+7. src/store/locationStore.ts (Zustand)
+   - Estado: myLocation, nearbyDrivers, nearbyPassengers, isTracking
+   - Acções: setMyLocation, updateNearbyDrivers, startTracking, stopTracking
+
+8. app/_layout.tsx (Expo Router) ou src/navigation/RootNavigator.tsx
+   - Stack com: AuthStack (Login, OTP) e MainTabs (Inicio, Mapa, Rede, Perfil)
+   - Redirecciona para AuthStack se não autenticado
+   - Componente de loading enquanto verifica sessão
+
+9. .env.example
+   - EXPO_PUBLIC_SUPABASE_URL=
+   - EXPO_PUBLIC_SUPABASE_ANON_KEY=
+   - AFRICAS_TALKING_API_KEY=
+   - AFRICAS_TALKING_USERNAME=
+   - JWT_SECRET=
+   - NODE_ENV=development
+
+10. app.json (Expo config)
+    - Nome: RideFriend, slug: ridefriend
+    - Permissões iOS: localização (always + whenInUse), notificações, câmara, contactos
+    - Permissões Android: ACCESS_FINE_LOCATION, ACCESS_BACKGROUND_LOCATION,
+      RECEIVE_BOOT_COMPLETED (para notificações)
+    - Splash screen e ícone: placeholder com cor #0D1F38
+    - Scheme: ridefriend (para deep links)
+
+No final, mostra o comando exacto para iniciar o projecto do zero:
+  npx create-expo-app@latest ridefriend --template
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 2 — BASE DE DADOS SUPABASE (Semana 1, Dia 2-3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Gera o ficheiro SQL completo de setup da base de dados Supabase para o
+RideFriend. O ficheiro deve ser executado no SQL Editor do Supabase Dashboard.
+
+Incluir nesta ordem:
+
+1. EXTENSÕES
+   - Activar: uuid-ossp, postgis, pg_trgm (para pesquisa de nomes)
+
+2. TIPOS ENUM
+   - contact_group: 'family', 'friend', 'colleague', 'neighbour'
+   - location_mode: 'passenger', 'driver'
+   - ride_status: 'requested', 'accepted', 'in_progress', 'completed', 'cancelled'
+
+3. TABELAS (com comentários explicativos em português em cada coluna importante)
+   Criar todas as 7 tabelas do schema definido no contexto base.
+   Para cada tabela:
+   - Chaves primárias UUID com gen_random_uuid()
+   - Timestamps created_at/updated_at com DEFAULT now()
+   - Constraints e CHECK adequados
+   - COMENTÁRIO na tabela explicando o seu propósito
+
+4. ÍNDICES (críticos para performance de queries geográficas)
+   - Index em locations(user_id, is_active)
+   - Index em locations(updated_at) para limpeza de dados antigos
+   - Index GIST em locations usando PostGIS (lat/lng como POINT)
+   - Index em contacts(user_id) e contacts(contact_user_id)
+   - Index em rides(driver_id, status) e rides(passenger_id, status)
+
+5. ROW LEVEL SECURITY (RLS) - CRÍTICO para segurança
+   - Activar RLS em TODAS as tabelas
+   - users: utilizador só lê/actualiza o próprio perfil; qualquer autenticado
+     pode ler perfis básicos (nome, foto, rating) de contactos seus
+   - locations: utilizador só escreve a própria localização; só contactos
+     directos podem ler a localização de um utilizador (subquery em contacts)
+   - contacts: utilizador só vê e gere os seus próprios contactos
+   - rides: driver e passenger do ride podem ler; só driver pode criar/cancelar
+   - ratings: participantes do ride podem criar rating; todos podem ler
+   - sos_events: apenas o próprio utilizador
+
+6. FUNÇÃO SQL: nearby_drivers(user_id UUID, radius_km FLOAT)
+   - Retorna motoristas activos num raio X km usando fórmula Haversine
+   - Filtra apenas contactos do utilizador (JOIN com tabela contacts)
+   - Inclui distância calculada e ETA estimado (distância / 30 km/h)
+   - Ordenado por distância ASC
+
+7. FUNÇÃO SQL: nearby_passengers(driver_id UUID, route_lat FLOAT[],
+                                  route_lng FLOAT[], radius_m INT)
+   - Retorna passageiros activos perto da rota do motorista
+   - Filtra apenas contactos do motorista
+   - Calcula desvio estimado em minutos
+
+8. TRIGGER: actualizar rating_avg em users após INSERT em ratings
+
+9. TRIGGER: updated_at automático para todas as tabelas
+
+10. DADOS DE TESTE (seed) para desenvolvimento
+    - 5 utilizadores fictícios em Luanda com coordenadas reais
+      (Bairro Ingombota, Talatona, Rangel, Viana, Cazenga)
+    - Relações de contactos entre eles
+    - 3 rides históricas completadas com ratings
+
+Terminar com: SELECT * FROM nearby_drivers('[UUID_DO_UTILIZADOR_TESTE]', 5.0);
+para validar que a função funciona.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 3 — AUTENTICAÇÃO OTP POR SMS (Semana 2, Dia 1-2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria o fluxo completo de autenticação do RideFriend. Gera estes ficheiros:
+
+1. src/services/auth.service.ts
+   - sendOTP(phone: string): Promise<void>
+     * Formata número para E.164 (+244 para Angola por defeito)
+     * Tenta Supabase Auth Phone primeiro
+     * Fallback para AfricasTalking se número angolano (+244)
+     * Lança erro tipado com mensagens em português
+   - verifyOTP(phone: string, token: string): Promise<Session>
+     * Verifica via Supabase
+     * Em caso de sucesso: cria/actualiza registo em tabela users
+     * Guarda sessão no SecureStore
+   - signOut(): Promise<void>
+   - refreshSession(): Promise<Session | null>
+   - getStoredSession(): Promise<Session | null>
+
+2. src/services/africas-talking.service.ts
+   - sendSMS(phone: string, message: string): Promise<void>
+   - Usando a API AfricasTalking com as credenciais do .env
+   - Mensagem OTP em português: "O teu código RideFriend é: XXXXXX. Válido 10 min."
+   - Tratamento de erros com mensagens descritivas
+
+3. src/screens/auth/PhoneInputScreen.tsx
+   - Input de número de telemóvel com:
+     * Picker de país com bandeira (Angola +244 como padrão)
+     * Formato automático do número enquanto digita
+     * Validação: mínimo 9 dígitos após prefixo
+   - Botão "Continuar" que activa sendOTP
+   - Loading state durante envio
+   - Mensagem de erro em português se falhar
+   - Link "Continuar com Google" (implementação futura — deixar placeholder)
+   - Design com cores do tema: fundo #F2F5FB, botão #0D1F38
+
+4. src/screens/auth/OTPVerifyScreen.tsx
+   - 6 inputs individuais para o código OTP
+   - Auto-foco para o próximo input ao digitar
+   - Auto-submit quando o 6º dígito é inserido
+   - Temporizador de reenvio: "Reenviar código em 59s"
+   - Botão "Reenviar" activo após 60 segundos
+   - Máximo 3 tentativas — após isso, bloqueia 5 minutos com aviso
+   - Loading state durante verificação
+   - Ao verificar com sucesso: navegar para OnboardingScreen se novo
+     utilizador, ou para MainTabs se já existente
+
+5. src/screens/auth/OnboardingScreen.tsx
+   - Só aparece no primeiro login
+   - Formulário: Nome completo, Bairro/Zona de residência, foto (opcional)
+   - Toggle: "Também tenho carro e quero dar boleias" → activa campos de
+     viatura: matrícula, marca/modelo, cor, número de lugares disponíveis
+   - Botão "Começar a usar o RideFriend"
+   - Guarda dados em tabela users via Supabase
+
+6. src/hooks/useAuth.ts
+   - Hook que expõe: user, session, isLoading, isAuthenticated
+   - signIn(phone), verifyOTP(phone, code), signOut, updateProfile
+   - Escuta mudanças de sessão Supabase em tempo real
+   - Sincroniza com authStore (Zustand)
+
+Adicionar ao final de cada ficheiro um bloco de comentário com exemplo de uso.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 4 — SERVIÇO DE LOCALIZAÇÃO EM TEMPO REAL (Semana 2, Dia 3-5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria o motor de localização do RideFriend — a funcionalidade mais crítica
+da app. Gera estes ficheiros:
+
+1. src/utils/geo.ts
+   - haversineDistance(lat1, lng1, lat2, lng2): number
+     (retorna distância em km, precisão 2 casas decimais)
+   - estimateETA(distanceKm: number, avgSpeedKmh = 30): number
+     (retorna minutos, arredondado para cima)
+   - isPointNearRoute(point, routeStart, routeEnd, radiusMeters): boolean
+     (verifica se um ponto está perto de uma linha recta entre dois pontos)
+   - formatDistance(km: number): string
+     ("50 m" se < 1km, "1.2 km" se >= 1km)
+   - formatETA(minutes: number): string
+     ("1 min", "5 min", "Agora!" se <= 1 min)
+   - reverseGeocode(lat, lng): Promise<string>
+     (chama Nominatim OpenStreetMap, retorna "Rua X, Bairro Y")
+
+2. src/services/location.service.ts
+   - startTracking(userId, mode: 'passenger'|'driver'): void
+     * Usa expo-location com accuracy BALANCED
+     * Intervalo: 15 segundos quando activo, 60s quando bateria < 20%
+     * Publica localização em tabela 'locations' via upsert
+     * Guarda subscription ID para poder parar depois
+   - stopTracking(userId): void
+     * Remove subscription, define is_active = false na tabela
+   - publishLocation(userId, coords, mode): Promise<void>
+     * Upsert na tabela locations com todos os campos
+   - getLastKnownLocation(userId): Promise<Location | null>
+   - requestPermissions(): Promise<boolean>
+     * Pede permissão foreground e depois background
+     * Se negada, guarda estado e mostra mensagem explicativa
+   - Listener de bateria: expo-battery para reduzir frequência quando baixa
+
+3. src/services/realtime.service.ts
+   - subscribeToContactsLocations(userId, contactIds, callback): RealtimeChannel
+     * Subscreve ao canal Supabase Realtime 'locations'
+     * Filtra para receber apenas actualizações dos contactIds fornecidos
+     * Callback recebe NearbyDriver[] ou NearbyPassenger[] actualizado
+   - subscribeToRideUpdates(rideId, callback): RealtimeChannel
+     * Subscreve a mudanças de status de uma corrida específica
+   - unsubscribe(channel): void
+   - unsubscribeAll(): void
+
+4. src/hooks/useLocation.ts
+   - Expõe: myLocation, isTracking, permissionStatus, error
+   - startPassengerMode(): void → activa tracking em modo passageiro
+   - startDriverMode(): void → activa tracking em modo motorista
+   - stopTracking(): void
+   - Detecta automaticamente a paragem mais próxima via reverseGeocode
+   - Lida com erros de GPS: sem sinal, permissão negada, GPS desligado
+
+5. src/hooks/useNearbyContacts.ts
+   - Usa useLocation + realtimeService em conjunto
+   - Retorna: nearbyDrivers: NearbyDriver[], nearbyPassengers: NearbyPassenger[]
+   - Actualiza em tempo real via Supabase Realtime
+   - Inclui distância e ETA calculados localmente (mais rápido que servidor)
+   - Auto-ordena por ETA crescente
+   - Para quando o componente desmonta (cleanup automático)
+
+6. Teste: src/utils/__tests__/geo.test.ts
+   - Testa haversineDistance com coordenadas conhecidas de Luanda
+     (ex: Ingombota → Talatona deve ser ~18km)
+   - Testa formatDistance e formatETA
+   - Testa isPointNearRoute com casos de dentro e fora do raio
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 5 — ECRÃ PRINCIPAL — MODO PASSAGEIRO (Semana 3, Dia 1-3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria o ecrã principal do modo Passageiro — o coração da app.
+
+1. src/components/ui/AvatarBadge.tsx
+   - Avatar circular com inicial do nome
+   - Props: name, size, colorScheme ('blue'|'amber'|'green'|'purple')
+   - Badge de estado online no canto inferior direito (verde/âmbar/cinza)
+   - Badge de relação opcional (etiqueta "Família", "Amigo", etc.)
+
+2. src/components/ui/ETABadge.tsx
+   - Badge colorido com ETA
+   - Verde pulsante se ETA <= 2 min (animação com Reanimated)
+   - Âmbar se ETA 3-8 min
+   - Cinza se ETA > 8 min
+
+3. src/components/ui/ApproachBar.tsx
+   - Barra de progresso horizontal animada
+   - Mostra aproximação do motorista em percentagem
+   - Animação suave com react-native-reanimated
+
+4. src/components/home/DriverCard.tsx
+   - Card de motorista na lista
+   - Props: driver: NearbyDriver, onCall, onRequest
+   - Mostra: avatar, nome, etiqueta de relação, distância, ETA, matrícula, rating
+   - Borda verde animada quando ETA <= 2 min
+   - Barra de aproximação quando ETA <= 5 min
+   - Botões: "Ligar" (secundário) e "Pedir Boleia" (primário #0D1F38)
+   - Animação de entrada com FadeIn (Reanimated)
+
+5. src/components/home/HeroLocationCard.tsx
+   - Card hero no topo do ecrã
+   - Mostra: paragem detectada (nome da rua), tempo de espera, nº de conhecidos próximos
+   - Botão de actualizar localização manualmente
+   - Gradiente de fundo: #0D1F38 → #1E3A8A
+   - Temperatura e ícone do tempo (placeholder estático por agora)
+
+6. src/components/home/AlertButton.tsx
+   - Botão grande "Estou Aqui! · Avisar Rede"
+   - Cor âmbar (#D97706) com sombra
+   - Animação de onda pulsante permanente (chama atenção)
+   - Estado "Enviado": muda para verde com checkmark, reverte após 5 segundos
+   - Ao premir: chama serviço de notificações push para contactos próximos
+
+7. src/screens/home/PassengerHomeScreen.tsx
+   - ScrollView com os componentes acima
+   - No topo: HeroLocationCard
+   - A seguir: AlertButton
+   - A seguir: lista de DriverCard (useNearbyContacts)
+   - Secção "Outros na paragem": passageiros conhecidos na mesma zona
+   - Botões de rodapé: "Alertar Rede" e "Convidar Amigo"
+   - Pull-to-refresh actualiza a lista
+   - Estado vazio se não há contactos próximos: ilustração + "Nenhum conhecido
+     próximo. Prima 'Estou Aqui!' para avisar a tua rede."
+   - Botão SOS sempre visível no canto inferior direito (vermelho, circular)
+
+8. src/components/home/RideConfirmBottomSheet.tsx
+   - Bottom sheet (react-native-reanimated) que abre ao premir "Pedir Boleia"
+   - Mostra ficha completa do motorista: foto/avatar, nome, matrícula,
+     modelo do carro, rating com estrelas, ETA actual
+   - Campo de mensagem pré-preenchida editável:
+     "Estou na [paragem]. Podes dar boleia até [zona]?"
+   - Barra de aproximação em tempo real
+   - Botões: "Cancelar" e "Confirmar Pedido"
+   - Ao confirmar: cria registo na tabela rides e notifica o motorista
+
+Criar também:
+   src/hooks/useRideRequest.ts
+   - Estados: idle, requesting, waiting_confirmation, active, completed
+   - Acções: requestRide(driverId), cancelRide(rideId), completeRide(rideId)
+   - Escuta mudanças de status em tempo real via realtimeService
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 6 — ECRÃ MODO MOTORISTA (Semana 3, Dia 4-5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria o ecrã e a lógica completa do Modo Motorista.
+
+1. src/components/driver/DriverStatusCard.tsx
+   - Card no topo com toggle ON/OFF de disponibilidade
+   - Quando ON: verde "Disponível · A partilhar localização"
+   - Quando OFF: cinza "Inactivo · Localização pausada"
+   - Visualização da rota: origem → destino com linha tracejada
+   - Distância total do percurso
+   - Toggle chama locationService.startTracking / stopTracking
+
+2. src/components/driver/RouteInput.tsx
+   - Input de destino com autocomplete via Nominatim API
+   - Debounce de 500ms nas pesquisas
+   - Lista de sugestões com nome e país
+   - Opções rápidas: últimos 3 destinos usados (guardados com MMKV)
+   - Ao seleccionar: guarda rota no locationStore
+
+3. src/components/driver/PassengerOnRouteCard.tsx
+   - Card de passageiro detectado no percurso do motorista
+   - Mostra: avatar, nome, relação, paragem, desvio estimado em minutos
+   - Badge "Na paragem" (verde pulsante) ou "a Xm" (âmbar)
+   - Botões: ícone de telefone + "Oferecer Boleia"
+
+4. src/screens/home/DriverHomeScreen.tsx
+   - Componente principal do modo motorista
+   - DriverStatusCard no topo
+   - RouteInput abaixo do status card
+   - Secção "Passageiros no Teu Percurso":
+     * Lista de PassengerOnRouteCard
+     * Filtra usando isPointNearRoute com raio de 500m da linha da rota
+     * Estado vazio: "Sem conhecidos na tua rota actual"
+   - Botão "Partilhar Rota com a Rede": envia notificação a todos os
+     contactos com a rota definida
+   - Ao receber pedido de boleia: bottom sheet de confirmação aparece
+     com: nome do passageiro, paragem, desvio estimado, aceitar/recusar
+     (tempo limite 90 segundos com contador regressivo)
+
+5. src/hooks/useDriverMode.ts
+   - Estado: isActive, currentRoute, passengersOnRoute, pendingRequest
+   - activateDriverMode(destination): void
+   - deactivateDriverMode(): void
+   - acceptRideRequest(rideId): void
+   - declineRideRequest(rideId): void
+   - detectPassengersOnRoute(): NearbyPassenger[]
+     (usa isPointNearRoute para cada passageiro activo nos contactos)
+
+6. src/components/home/HomeTabScreen.tsx
+   - Ecrã que contém o toggle Passageiro/Motorista no topo
+   - Renderiza PassengerHomeScreen ou DriverHomeScreen conforme o modo
+   - Toggle animado com Reanimated
+   - Persiste último modo usado com MMKV
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 7 — ECRÃ DE MAPA (Semana 4, Dia 1-2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria o ecrã de mapa interactivo em tempo real.
+
+1. src/components/maps/MapMarker.tsx
+   - Marcador personalizado para react-native-maps
+   - Tipos: 'me' (âmbar pulsante), 'driver' (azul), 'passenger' (roxo),
+     'stop' (cinza)
+   - Cada marcador mostra: avatar com inicial, nome truncado, ETA
+   - Animação de pulsação para marcador "me" e para drivers próximos
+   - Props: type, user: User, eta?: number, onPress
+
+2. src/components/maps/MapCallout.tsx
+   - Callout (popup) ao tocar num marcador
+   - Mostra: nome completo, relação, distância, ETA
+   - Botões: "Ligar" e "Pedir/Oferecer"
+   - Estilo card branco com sombra suave
+
+3. src/screens/map/MapScreen.tsx
+   - MapView com provider PROVIDER_DEFAULT e tiles OpenStreetMap
+   - Configuração de tiles:
+     urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+   - Marcador próprio centrado no mapa
+   - Marcadores de todos os contactos activos (nearbyDrivers + nearbyPassengers)
+   - Animação de movimento suave: quando a posição de um marcador muda,
+     anima do ponto anterior para o novo (interpolação linear 2 segundos)
+   - Controles: botão de centrar na posição actual, zoom +/-
+   - Legenda no canto inferior esquerdo
+   - Botão de filtro: "Só motoristas" / "Todos os contactos"
+   - Ao tocar num contacto: callout + opção de pedir/oferecer boleia directamente
+   - Círculo de raio (transparente âmbar) mostrando área de detecção (5km)
+
+4. src/hooks/useMapData.ts
+   - Combina nearbyDrivers + nearbyPassengers para o mapa
+   - Mantém posições anteriores para animação suave
+   - Retorna: markers[], mapRegion, recenterMap()
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 8 — NOTIFICAÇÕES PUSH E SOS (Semana 4, Dia 3-5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria o sistema completo de notificações push e o módulo SOS.
+
+1. src/services/notifications.service.ts
+   - registerForPushNotifications(): Promise<string | null>
+     * Pede permissão ao utilizador
+     * Obtém Expo Push Token
+     * Guarda token na tabela users via Supabase
+   - sendLocalNotification(title, body, data?): void
+     * Notificação local imediata (sem servidor)
+   - scheduleNotification(title, body, trigger): void
+   - handleNotificationReceived(notification): void
+     * Dispatcher: redirige para ecrã correcto conforme notification.data.type
+   - Tipos de notificação a tratar:
+     * 'driver_approaching' → abrir ecrã principal com card do motorista
+     * 'ride_request' → abrir bottom sheet de confirmação (modo motorista)
+     * 'ride_accepted' → abrir tracking da boleia
+     * 'sos_alert' → alerta urgente (toca som mesmo em silêncio)
+     * 'contact_waiting' → passageiro da rede está na paragem
+
+2. backend/src/services/push.service.ts (lado do servidor Node.js)
+   - sendPushToUser(userId, title, body, data): Promise<void>
+     * Busca expo_push_token do utilizador na base de dados
+     * Envia via Expo Push API (https://exp.host/--/api/v2/push/send)
+   - sendPushToContacts(userId, radius_km, title, body, data): Promise<void>
+     * Busca contactos activos do utilizador num raio X km
+     * Envia push a todos (batch de max 100 por chamada à Expo API)
+   - sendSosAlert(userId, lat, lng): Promise<void>
+     * Notifica contacto de emergência com localização
+     * Envia SMS via AfricasTalking como backup (para garantia)
+
+3. src/components/ui/SOSButton.tsx
+   - Botão circular vermelho fixo no canto inferior direito
+   - Texto "SOS" em bold
+   - Ao pressionar (long press de 1.5 segundos para evitar activação acidental):
+     * Abre SOSConfirmSheet
+   - Feedback háptico ao activar
+
+4. src/components/sos/SOSConfirmSheet.tsx
+   - Bottom sheet de confirmação SOS
+   - Mostra: contacto de emergência definido, número da Polícia (113)
+   - Contador regressivo de 5 segundos para cancelar
+   - Ao confirmar ou quando contador chega a zero:
+     * Envia localização ao contacto de emergência via push + SMS
+     * Cria registo em sos_events
+     * Mostra "SOS enviado. Ajuda a caminho."
+
+5. src/screens/profile/EmergencyContactScreen.tsx
+   - Ecrã de configuração do contacto de emergência
+   - Seleccionar da rede de contactos existente
+   - Ou adicionar número externo manualmente
+   - Obrigatório — sem contacto de emergência não se pode usar a app
+   - Testar o SOS: botão "Enviar SOS de Teste" que envia mensagem de teste
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 9 — BACKEND NODE.JS + DEPLOY HOSTINGER (Semana 5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria o backend completo e os scripts de deploy para o VPS Hostinger.
+
+1. backend/src/app.ts
+   - Express app com: cors, helmet, express-rate-limit, compression
+   - Rate limit: 100 req/min por IP global; 10 req/min para rotas de auth
+   - Logging com Morgan (combined format)
+   - Middleware de autenticação JWT (valida tokens Supabase)
+   - Handler global de erros em português
+   - Health check: GET /health → { status: 'ok', uptime, version }
+
+2. backend/src/routes/ — gerar ficheiros para cada rota:
+   - auth.routes.ts : POST /auth/otp, POST /auth/verify
+   - users.routes.ts : GET /users/me, PATCH /users/me, GET /users/:id
+   - contacts.routes.ts : GET, POST, DELETE /contacts
+   - locations.routes.ts : POST /locations/me, GET /locations/nearby
+   - rides.routes.ts : GET, POST /rides, PATCH /rides/:id/status
+   - ratings.routes.ts : POST /ratings
+   - notifications.routes.ts : POST /notifications/alert-contacts
+   - sos.routes.ts : POST /sos
+
+3. backend/src/controllers/ — lógica de cada rota com:
+   - Validação de input com zod
+   - Chamadas ao Supabase (via supabase-js no servidor)
+   - Respostas tipadas
+   - Logs de erros com contexto
+
+4. backend/ecosystem.config.js (PM2)
+   - Nome: ridefriend-api
+   - Script: dist/app.js
+   - Instances: 2 (cluster mode)
+   - Max memory restart: 500MB
+   - Env: production com todas as variáveis necessárias
+   - Log paths: /var/log/ridefriend/
+
+5. nginx/ridefriend.conf
+   - Server block para api.ridefriend.ao (ou domínio escolhido)
+   - Reverse proxy para localhost:3000
+   - Gzip compression
+   - Headers de segurança (HSTS, X-Frame-Options, etc.)
+   - Rate limiting no Nginx (camada adicional)
+   - Configuração para SSL (Certbot vai adicionar a secção SSL)
+
+6. scripts/deploy.sh
+   Bash script completo de setup inicial do VPS:
+   #!/bin/bash
+   # Setup completo Ubuntu 22.04 para RideFriend API
+   # Executar como root: bash deploy.sh
+   - Actualizar sistema (apt update && upgrade)
+   - Instalar Node.js 20 LTS via NodeSource
+   - Instalar PM2 globalmente
+   - Instalar Nginx
+   - Configurar UFW firewall (portas 22, 80, 443)
+   - Criar utilizador 'ridefriend' sem root
+   - Clonar repositório (pede URL do GitHub)
+   - Instalar dependências npm
+   - Copiar ficheiro .env
+   - Build TypeScript
+   - Configurar Nginx
+   - Instalar Certbot e gerar SSL
+   - Iniciar com PM2
+   - Configurar PM2 startup (pm2 startup + pm2 save)
+
+7. .github/workflows/deploy.yml
+   - Trigger: push para branch main
+   - Steps: checkout, install, test, build TypeScript
+   - SSH para VPS: git pull, npm ci --production, npm run build, pm2 reload
+   - Notificação de deploy: envia mensagem WhatsApp ao dev (via CallMeBot API)
+   - Em caso de falha: reverte para commit anterior
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 10 — ECRÃ DE REDE, PERFIL, HISTORIAL E RATINGS (Semana 6)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cria os ecrãs secundários da app que completam a experiência.
+
+1. src/screens/network/NetworkScreen.tsx
+   - Lista de contactos organizada por grupo (Família, Amigos, Colegas, Vizinhos)
+   - Cada contacto: avatar, nome, estado (online/inactivo), nota de contexto
+     ("Disponível · 1.5 km", "A caminho · 8 min", "Offline")
+   - Secção no topo: resumo "4 contactos activos agora"
+   - Botão "+ Adicionar Contacto" → abre AddContactSheet
+   - Swipe para remover contacto (com confirmação)
+   - Filtro por estado: "Todos" / "Activos" / "Motoristas"
+
+2. src/components/network/AddContactSheet.tsx
+   - Opções: (a) Seleccionar da agenda do telemóvel
+             (b) Partilhar link/QR de convite
+             (c) Pesquisar por número de telemóvel
+   - Para opção (a): lista da agenda com overlay "Já usa RideFriend" nos
+     contactos que já têm conta
+   - Picker de grupo ao adicionar (Família/Amigo/Colega/Vizinho)
+   - QR Code gerado com o link de convite único do utilizador
+
+3. src/screens/profile/ProfileScreen.tsx
+   - Hero card com avatar grande, nome, bairro, rating (estrelas), contagem boleias
+   - Stats: boleias recebidas, boleias dadas, contactos na rede
+   - Secção "Historial Recente": lista das últimas 10 boleias
+   - Secção "Avaliações": últimas avaliações recebidas com comentários
+   - Botão "Editar Perfil"
+   - Botão "Definições"
+   - Botão "Sair" (com confirmação)
+
+4. src/components/profile/RideHistoryItem.tsx
+   - Item do historial de boleia
+   - Ícone diferente: recebida (carro entrando) vs dada (carro saindo)
+   - Nome do outro utilizador, percurso, data/hora
+   - Rating dado/recebido com estrelas
+   - Ao tocar: expandir para ver percurso completo e comentário
+
+5. src/components/profile/RatingBottomSheet.tsx
+   - Aparece após uma boleia ser completada
+   - 5 estrelas interactivas com animação ao seleccionar
+   - Campo de comentário opcional
+   - Sugestões rápidas: "Pontual", "Simpático", "Carro limpo", "Boa conversa"
+   - Botão "Avaliar [Nome]"
+   - Só aparece uma vez por boleia; guarda localmente que já avaliou
+
+6. src/screens/settings/SettingsScreen.tsx
+   - Notificações: toggles por tipo (motor. próximo, passag. na paragem, SOS, etc.)
+   - Privacidade: quem vê a minha localização (Todos contactos / Só família / Ninguém)
+   - Viatura: editar matrícula, modelo, lugares
+   - Contacto de emergência: link para EmergencyContactScreen
+   - Conta: eliminar conta, exportar dados
+   - Sobre: versão da app, termos de uso, política de privacidade
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROMPT 11 — TESTES, SEED E PREPARAÇÃO PARA BETA (Semana 7)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prepara o projecto para os primeiros utilizadores reais.
+
+1. src/utils/__tests__/ — gerar testes unitários para:
+   - geo.ts (haversine, formatDistance, isPointNearRoute)
+   - auth.service.ts (com mocks do Supabase e AfricasTalking)
+   - location.service.ts (com mock do expo-location)
+   - notifications.service.ts (com mock do expo-notifications)
+
+2. backend/src/__tests__/ — testes de integração (supertest):
+   - POST /auth/otp : número válido, número inválido, rate limit
+   - GET /locations/nearby : com e sem contactos próximos
+   - POST /rides : criação válida, criação duplicada
+   - POST /ratings : após ride completa, antes de ride completa (deve falhar)
+
+3. supabase/seed.sql
+   Dados de teste realistas para desenvolvimento:
+   - 8 utilizadores com nomes angolanos reais e coordenadas de Luanda:
+     * 3 em Ingombota (zona centro)
+     * 2 em Talatona (zona sul)
+     * 2 em Viana (zona leste)
+     * 1 em Cacuaco (zona norte)
+   - Relações de contactos entre eles (rede realista)
+   - 2 utilizadores com is_driver = true e dados de viatura
+   - 5 rides históricas completadas com ratings
+   - Localizações activas para 4 utilizadores (para testar o mapa)
+
+4. docs/SETUP.md
+   Guia completo passo a passo para configurar o ambiente de desenvolvimento:
+   - Pré-requisitos: Node.js 20, Git, Expo CLI, conta Supabase, conta AfricasTalking
+   - Clone do repositório
+   - Configuração do .env
+   - Setup do Supabase (executar migrations + seed)
+   - Instalar dependências
+   - Iniciar a app: npx expo start
+   - Testar no telemóvel com Expo Go
+   - Configurar backend local
+   - Comandos úteis: lint, test, build
+
+5. docs/API.md
+   Documentação de todos os endpoints do backend com:
+   - Método, URL, headers necessários
+   - Body de request (JSON schema)
+   - Resposta de sucesso (exemplo JSON)
+   - Possíveis erros com códigos e mensagens em português
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SEQUÊNCIA RECOMENDADA DE USO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DIA 1   → Prompt 0 (configurar projecto Claude) + Prompt 1 (setup)
+DIA 2   → Prompt 2 (base de dados Supabase)
+DIA 3-4 → Prompt 3 (autenticação)
+DIA 5-6 → Prompt 4 (localização)
+DIA 7-8 → Prompt 5 (ecrã passageiro)
+DIA 9   → Prompt 6 (ecrã motorista)
+DIA 10  → Prompt 7 (mapa)
+DIA 11  → Prompt 8 (notificações + SOS)
+DIA 12-13 → Prompt 9 (backend + deploy)
+DIA 14-15 → Prompt 10 (rede + perfil)
+DIA 16  → Prompt 11 (testes + beta)
+
+DICAS IMPORTANTES
+-----------------
+• Após cada prompt, valida o código no Expo Go antes de avançar
+• Usa o comando: npx expo start --tunnel (para testar no telemóvel Angola via dados móveis)
+• Guarda cada ficheiro gerado imediatamente — Claude não retém código entre sessões
+• Se um ficheiro for muito longo, pede: "Continua a partir de [última linha]"
+• Para debugging: adiciona "Explica o que este código faz linha a linha" ao prompt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIM DO DOCUMENTO DE PROMPTS · RideFriend v1.0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -1,0 +1,13 @@
+{
+  "error": "Error",
+  "error_occurred": "An error occurred",
+  "invalid_phone": "Invalid phone number",
+  "invalid_code": "Invalid code",
+  "network_error": "Network error",
+  "permission_denied": "Permission denied",
+  "location_not_available": "Location not available",
+  "try_again": "Try again",
+  "server_error": "Server error",
+  "timeout": "Request timeout",
+  "something_wrong": "Something went wrong"
+}

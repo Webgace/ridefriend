@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RideFriend · Boleia Entre Conhecidos</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --navy: #0D1F38;
+  --navy2: #162E52;
+  --amber: #F59E0B;
+  --amber-d: #D97706;
+  --amber-l: #FFF7E6;
+  --green: #10B981;
+  --green-l: #D1FAE5;
+  --red: #EF4444;
+  --red-l: #FEE2E2;
+  --blue-l: #EFF6FF;
+  --surface: #F2F5FB;
+  --white: #FFFFFF;
+  --text: #0D1F38;
+  --text2: #4B5775;
+  --text3: #94A3B8;
+  --border: #E2E8F2;
+  --r-sm: 14px;
+  --r-md: 20px;
+  --r-lg: 28px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #C8D6EA;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ── PHONE FRAME ── */
+.phone {
+  width: 393px;
+  height: 812px;
+  background: var(--surface);
+  border-radius: 50px;
+  box-shadow: 0 40px 80px rgba(13,31,56,.30), 0 0 0 10px #0D1F38, 0 0 0 12px #243960;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ── STATUS BAR ── */
+.status-bar {
+  background: var(--white);
+  padding: 14px 24px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.status-icons { display:flex; gap:6px; align-items:center; font-size:14px; }
+
+/* ── HEADER ── */
+.app-header {
+  background: var(--white);
+  padding: 4px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.logo-dot {
+  width: 10px; height: 10px;
+  background: var(--amber);
+  border-radius: 50%;
+  display: inline-block;
+}
+.header-btns { display:flex; gap:8px; }
+.hbtn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items:center; justify-content:center;
+  position: relative;
+  transition: background .2s;
+}
+.hbtn:hover { background: var(--border); }
+.notif-dot {
+  position: absolute;
+  top: 7px; right: 7px;
+  width: 8px; height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* ── ROLE TOGGLE ── */
+.role-strip {
+  margin-top: 10px;
+  background: var(--surface);
+  border-radius: 50px;
+  padding: 4px;
+  display: flex;
+  gap: 2px;
+}
+.rtab {
+  flex: 1;
+  text-align: center;
+  padding: 9px 12px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .2s;
+  display: flex; align-items:center; justify-content:center; gap:5px;
+}
+.rtab.active {
+  background: var(--navy);
+  color: white;
+  box-shadow: 0 4px 12px rgba(13,31,56,.25);
+}
+
+/* ── SCROLL AREA ── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+/* ── HERO LOCATION CARD ── */
+.hero-card {
+  background: var(--navy);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content:'';
+  position:absolute;
+  top:-30px; right:-20px;
+  width:130px; height:130px;
+  background: rgba(245,158,11,.12);
+  border-radius:50%;
+}
+.hero-card::after {
+  content:'';
+  position:absolute;
+  bottom:-40px; right:30px;
+  width:90px; height:90px;
+  background: rgba(245,158,11,.07);
+  border-radius:50%;
+}
+.hero-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,.6);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 4px;
+}
+.hero-location {
+  font-family: 'Sora', sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.hero-location i { color: var(--amber); font-size: 16px; }
+.hero-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hero-pill {
+  background: rgba(255,255,255,.12);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex; align-items:center; gap:5px;
+}
+.hero-pill.amber { background: rgba(245,158,11,.25); color: #FCD34D; }
+.hero-pill.green { background: rgba(16,185,129,.25); color: #6EE7B7; }
+
+/* ── ALERT BUTTON ── */
+.alert-btn {
+  background: var(--amber);
+  border: none;
+  border-radius: var(--r-md);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+  transition: all .2s;
+  width: 100%;
+  box-shadow: 0 6px 18px rgba(245,158,11,.35);
+  position: relative;
+  overflow: hidden;
+}
+.alert-btn:hover { background: var(--amber-d); }
+.alert-btn.sent {
+  background: var(--green);
+  color: white;
+  box-shadow: 0 6px 18px rgba(16,185,129,.35);
+}
+.pulse-ring {
+  position: absolute;
+  width: 100%; height: 100%;
+  border-radius: var(--r-md);
+  animation: pulse-ring 2s infinite;
+  background: transparent;
+  border: 2px solid var(--amber);
+  opacity: 0;
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity:.6; }
+  100% { transform: scale(1.06); opacity:0; }
+}
+
+/* ── SECTION HEADERS ── */
+.sec-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sec-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex; align-items:center; gap:7px;
+}
+.sec-title i { color: var(--navy2); }
+.sec-count {
+  background: var(--navy);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.sec-link { font-size: 13px; color: var(--amber-d); font-weight: 600; cursor:pointer; }
+
+/* ── DRIVER / PASSENGER CARDS ── */
+.card-list { display:flex; flex-direction:column; gap:10px; }
+
+.p-card {
+  background: var(--white);
+  border-radius: var(--r-md);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all .2s;
+}
+.p-card:hover {
+  border-color: #93C5FD;
+  box-shadow: 0 4px 14px rgba(37,99,235,.1);
+}
+.p-card.approaching {
+  border-color: #6EE7B7;
+  background: #F0FDF4;
+}
+
+.avatar {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  display: flex; align-items:center; justify-content:center;
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+  position: relative;
+}
+.avatar.blue { background: var(--blue-l); color: #1D4ED8; }
+.avatar.amber { background: var(--amber-l); color: #92400E; }
+.avatar.green { background: var(--green-l); color: #065F46; }
+.avatar.purple { background: #EDE9FE; color: #5B21B6; }
+
+.online-dot {
+  position: absolute;
+  bottom: 1px; right: 1px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+.online-dot.online { background: var(--green); }
+.online-dot.busy { background: var(--amber); }
+.online-dot.offline { background: var(--text3); }
+
+.card-body { flex:1; min-width:0; }
+.card-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.rel-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.rel-fam { background:#FEE2E2; color:#991B1B; }
+.rel-ami { background:#DBEAFE; color:#1E40AF; }
+.rel-col { background:#F3E8FF; color:#6B21A8; }
+.rel-viz { background:#D1FAE5; color:#065F46; }
+
+.card-sub {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 3px;
+  display: flex; align-items:center; gap:5px;
+  flex-wrap: wrap;
+}
+.eta-badge {
+  display: inline-flex; align-items:center; gap:4px;
+  background: var(--green-l);
+  color: #065F46;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.eta-badge.far { background: var(--amber-l); color: #92400E; }
+.eta-badge.close { background: var(--green-l); color: #065F46; animation: blink-green 1.5s infinite; }
+@keyframes blink-green {
+  0%,100% { opacity:1; } 50% { opacity:.6; }
+}
+
+.card-actions { display:flex; gap:6px; flex-shrink:0; }
+.btn-sm {
+  border: none;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items:center; gap:4px;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.btn-call { background: var(--surface); color: var(--text2); border: 1px solid var(--border); }
+.btn-call:hover { background: var(--border); }
+.btn-ask { background: var(--navy); color: white; }
+.btn-ask:hover { background: var(--navy2); }
+.btn-offer { background: var(--amber); color: var(--navy); }
+.btn-offer:hover { background: var(--amber-d); }
+.btn-icon {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 15px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:.2s;
+}
+.btn-icon:hover { background:var(--border); }
+
+/* ── MAP VIEW ── */
+.map-container {
+  background: #E8EEF8;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  position: relative;
+  height: 240px;
+  flex-shrink: 0;
+}
+.map-svg { width:100%; height:100%; }
+.map-btn-grp {
+  position:absolute;
+  top:10px; right:10px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.map-btn {
+  width:34px; height:34px;
+  border-radius:10px;
+  border:none;
+  background: white;
+  font-size:15px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.map-legend {
+  position:absolute;
+  bottom:10px; left:10px;
+  background: rgba(255,255,255,.92);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display:flex; gap:12px;
+}
+.legend-item {
+  display:flex; align-items:center; gap:5px;
+  font-size:11px; font-weight:500; color:var(--text2);
+}
+.legend-dot {
+  width:10px; height:10px; border-radius:50%;
+}
+.leg-driver { background:#2563EB; }
+.leg-me { background:var(--amber); }
+.leg-stop { background:#94A3B8; }
+
+/* ── DRIVER STATUS CARD ── */
+.driver-status-card {
+  background: var(--white);
+  border-radius: var(--r-md);
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.status-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.toggle-switch {
+  width: 52px; height: 28px;
+  background: var(--border);
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  transition: background .2s;
+}
+.toggle-switch.on { background: var(--green); }
+.toggle-knob {
+  position:absolute;
+  top:3px; left:3px;
+  width:22px; height:22px;
+  background:white;
+  border-radius:50%;
+  transition: left .2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,.15);
+}
+.toggle-switch.on .toggle-knob { left: 27px; }
+.route-row {
+  display:flex; align-items:center; gap:8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.route-dot-line {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+.rdot { width:9px; height:9px; border-radius:50%; }
+.rdot.start { background:var(--green); }
+.rdot.end { background:var(--navy); }
+.rline { width:2px; height:18px; background:var(--border); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 10px 0 20px;
+  flex-shrink: 0;
+}
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: all .2s;
+}
+.nav-icon {
+  font-size: 22px;
+  color: var(--text3);
+  transition: color .2s;
+}
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  transition: color .2s;
+  letter-spacing:.02em;
+}
+.nav-item.active .nav-icon { color: var(--navy); }
+.nav-item.active .nav-label { color: var(--navy); }
+.nav-pip {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--amber);
+  display: none;
+}
+.nav-item.active .nav-pip { display: block; }
+
+/* ── SOS BUTTON ── */
+.sos-btn {
+  position: absolute;
+  bottom: 85px;
+  right: 18px;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--red);
+  border: none;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(239,68,68,.5);
+  display: flex; align-items:center; justify-content:center;
+  z-index: 20;
+  transition: all .2s;
+  letter-spacing:.05em;
+}
+.sos-btn:hover { transform: scale(1.08); }
+
+/* ── TOASTS ── */
+.toast {
+  position: absolute;
+  bottom: 95px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--navy);
+  color: white;
+  padding: 11px 18px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  transition: all .3s;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(13,31,56,.3);
+}
+.toast.show { opacity:1; transform: translateX(-50%) translateY(0); }
+
+/* ── BOTTOM SHEET MODAL ── */
+.sheet-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(13,31,56,.55);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+}
+.sheet-overlay.open { display:flex; }
+.sheet {
+  background: var(--white);
+  border-radius: 30px 30px 0 0;
+  width: 100%;
+  max-height: 88%;
+  overflow-y: auto;
+  padding: 20px;
+  animation: slide-up .3s ease;
+}
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+.sheet-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* ── RATING STARS ── */
+.stars { display:flex; gap:4px; }
+.star { font-size:20px; color:#E2E8F2; cursor:pointer; transition:.1s; }
+.star.lit { color:var(--amber); }
+
+/* ── PROFILE / REDE VIEWS ── */
+.rede-group { display:flex; flex-direction:column; gap:6px; }
+.rede-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 2px;
+  padding-left: 4px;
+}
+.stat-row { display:flex; gap:10px; }
+.stat-box {
+  flex:1;
+  background: var(--white);
+  border-radius: var(--r-md);
+  padding: 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.stat-num {
+  font-family: 'Sora', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--navy);
+}
+.stat-lbl {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 2px;
+  font-weight: 500;
+}
+.profile-hero {
+  background: var(--navy);
+  border-radius: var(--r-lg);
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: white;
+}
+.profile-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: rgba(245,158,11,.3);
+  border: 3px solid var(--amber);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Sora',sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: white;
+  flex-shrink:0;
+}
+.profile-name {
+  font-family:'Sora',sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+.profile-rating {
+  display:flex; align-items:center; gap:5px;
+  font-size: 13px;
+  color: rgba(255,255,255,.7);
+  margin-top: 4px;
+}
+.profile-rating i { color: var(--amber); font-size:14px; }
+
+.history-item {
+  background: var(--white);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  display:flex; align-items:center; gap:12px;
+  border: 1px solid var(--border);
+}
+.history-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px;
+  flex-shrink:0;
+}
+.h-received { background:var(--blue-l); color:#1D4ED8; }
+.h-given { background:var(--amber-l); color:#92400E; }
+
+/* ── CONFIRM SHEET ── */
+.confirm-contact {
+  display:flex; align-items:center; gap:12px;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.confirm-actions { display:flex; gap:10px; }
+.btn-lg {
+  flex:1;
+  padding: 14px;
+  border-radius: var(--r-md);
+  font-size: 15px;
+  font-weight: 700;
+  border:none;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition: all .2s;
+}
+.btn-lg-cancel { background:var(--surface); color:var(--text2); border:1px solid var(--border); }
+.btn-lg-confirm { background:var(--navy); color:white; }
+.btn-lg-confirm:hover { background:var(--navy2); }
+
+/* notifications sheet */
+.notif-item {
+  display:flex; gap:12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.notif-item:last-child { border-bottom:none; }
+.notif-icon {
+  width:38px; height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px; flex-shrink:0;
+}
+.ni-green { background:var(--green-l); color:#065F46; }
+.ni-amber { background:var(--amber-l); color:#92400E; }
+.ni-blue { background:var(--blue-l); color:#1D4ED8; }
+.notif-body { flex:1; }
+.notif-text { font-size:13px; color:var(--text); font-weight:500; line-height:1.4; }
+.notif-time { font-size:11px; color:var(--text3); margin-top:3px; }
+
+/* animated car on map */
+@keyframes move-car {
+  0%   { transform: translate(60px, 80px); }
+  50%  { transform: translate(110px, 60px); }
+  100% { transform: translate(60px, 80px); }
+}
+.car-anim { animation: move-car 6s ease-in-out infinite; }
+@keyframes move-car2 {
+  0%   { transform: translate(200px, 140px); }
+  50%  { transform: translate(160px, 120px); }
+  100% { transform: translate(200px, 140px); }
+}
+.car-anim2 { animation: move-car2 8s ease-in-out infinite; }
+
+@keyframes ripple {
+  0% { r:8; opacity:.8; }
+  100% { r:22; opacity:0; }
+}
+.ripple-anim { animation: ripple 2s ease-out infinite; }
+.ripple-anim2 { animation: ripple 2s ease-out infinite .6s; }
+.ripple-anim3 { animation: ripple 2s ease-out infinite 1.1s; }
+
+/* approach progress */
+.approach-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow:hidden;
+}
+.approach-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--green);
+  transition: width 1s linear;
+}
+
+/* tabs for inner content */
+.tab-content { display:none; }
+.tab-content.active { display:flex; flex-direction:column; gap:14px; }
+
+/* QR modal */
+.qr-wrap {
+  background: var(--surface);
+  border-radius: var(--r-md);
+  padding: 24px;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+}
+.qr-box {
+  width:140px; height:140px;
+  background:white;
+  border: 2px solid var(--navy);
+  border-radius: 12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:60px;
+  color:var(--navy);
+}
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <i class="fas fa-signal"></i>
+      <i class="fas fa-wifi"></i>
+      <i class="fas fa-battery-three-quarters" style="color:#10B981;"></i>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="header-row">
+      <div class="logo">
+        <span class="logo-dot"></span>RideFriend
+      </div>
+      <div class="header-btns">
+        <button class="hbtn" onclick="openNotifs()" title="Notificações">
+          <i class="fas fa-bell"></i>
+          <span class="notif-dot" id="notifDot"></span>
+        </button>
+        <button class="hbtn" onclick="openQR()" title="QR Code"><i class="fas fa-qrcode"></i></button>
+        <button class="hbtn" onclick="openProfile()" title="Perfil">
+          <span style="font-family:Sora;font-weight:700;font-size:14px;color:var(--navy)">M</span>
+        </button>
+      </div>
+    </div>
+    <div class="role-strip">
+      <div class="rtab active" id="tab-pass" onclick="setRole('passenger')">
+        <i class="fas fa-person-walking"></i> Passageiro
+      </div>
+      <div class="rtab" id="tab-driv" onclick="setRole('driver')">
+        <i class="fas fa-car"></i> Motorista
+      </div>
+    </div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll" id="mainScroll">
+    <!-- HOME: PASSENGER -->
+    <div class="tab-content active" id="view-passenger">
+      <div class="hero-card">
+        <div class="hero-label"><i class="fas fa-map-pin"></i> Paragem actual</div>
+        <div class="hero-location">
+          <i class="fas fa-bus"></i>
+          <span id="stopName">Av. Lenine · Paragem 4</span>
+        </div>
+        <div class="hero-meta">
+          <div class="hero-pill amber"><i class="far fa-clock"></i> À espera: <span id="waitTime">14 min</span></div>
+          <div class="hero-pill green"><i class="fas fa-users"></i> 6 conhecidos próximos</div>
+          <div class="hero-pill"><i class="fas fa-thermometer-half"></i> 28°C</div>
+        </div>
+      </div>
+
+      <button class="alert-btn" id="alertBtn" onclick="sendAlert()">
+        <div class="pulse-ring" id="alertRing"></div>
+        <i class="fas fa-broadcast-tower" id="alertIcon"></i>
+        <span id="alertText">Estou Aqui! · Avisar Rede</span>
+      </button>
+
+      <div class="sec-hdr">
+        <div class="sec-title"><i class="fas fa-car"></i> Motoristas Conhecidos</div>
+        <span class="sec-count" id="driverCount">3</span>
+      </div>
+      <div class="card-list" id="driverList"></div>
+
+      <div class="sec-hdr">
+        <div class="sec-title"><i class="fas fa-people-group"></i> Outros na Paragem</div>
+        <span class="sec-link">Ver mapa</span>
+      </div>
+      <div class="card-list" id="coPassList"></div>
+
+      <div style="display:flex;gap:10px;">
+        <button class="btn-sm btn-call" style="flex:1;justify-content:center;padding:12px;" onclick="toast('🔔 Contactos alertados via SMS e app')">
+          <i class="fas fa-bell"></i> Alertar Rede
+        </button>
+        <button class="btn-sm btn-call" style="flex:1;justify-content:center;padding:12px;" onclick="openQR()">
+          <i class="fas fa-user-plus"></i> Convidar Amigo
+        </button>
+      </div>
+    </div>
+
+    <!-- HOME: DRIVER -->
+    <div class="tab-content" id="view-driver">
+      <div class="driver-status-card">
+        <div class="status-toggle-row">
+          <div>
+            <div style="font-family:Sora;font-weight:700;font-size:15px;color:var(--text)">Estado: <span id="driverStatusLabel" style="color:var(--green)">Disponível</span></div>
+            <div style="font-size:12px;color:var(--text2);margin-top:2px">A partilhar localização</div>
+          </div>
+          <div class="toggle-switch on" id="driverToggle" onclick="toggleDriverStatus()">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+        <div class="route-row">
+          <div class="route-dot-line">
+            <div class="rdot start"></div>
+            <div class="rline"></div>
+            <div class="rdot end"></div>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--text)">Aeroporto Internacional</div>
+            <div style="font-size:11px;color:var(--text3);margin:3px 0 6px;">percurso em andamento</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">Talatona · Bairro Azul</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text3);text-align:right">dist.</div>
+            <div style="font-size:16px;font-weight:700;color:var(--navy);text-align:right">18 km</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-hdr">
+        <div class="sec-title"><i class="fas fa-street-view"></i> Passageiros na Rota</div>
+        <span class="sec-count">2</span>
+      </div>
+      <div class="card-list" id="waitingList"></div>
+
+      <div class="sec-hdr">
+        <div class="sec-title"><i class="fas fa-route"></i> No Meu Percurso</div>
+      </div>
+      <div class="card-list" id="routeList"></div>
+
+      <button class="btn-sm btn-offer" style="width:100%;justify-content:center;padding:13px;font-size:14px;" onclick="toast('🗺️ Rota partilhada com a rede')">
+        <i class="fas fa-share-alt"></i> Partilhar Rota com a Rede
+      </button>
+    </div>
+
+    <!-- MAP VIEW -->
+    <div class="tab-content" id="view-map">
+      <div class="map-container">
+        <svg class="map-svg" viewBox="0 0 361 240" xmlns="http://www.w3.org/2000/svg">
+          <!-- background -->
+          <rect width="361" height="240" fill="#DDE6F0"/>
+          <!-- blocks -->
+          <rect x="10" y="10" width="60" height="45" rx="4" fill="#C8D6EA"/>
+          <rect x="80" y="10" width="80" height="30" rx="4" fill="#C8D6EA"/>
+          <rect x="10" y="65" width="45" height="55" rx="4" fill="#C8D6EA"/>
+          <rect x="65" y="50" width="35" height="40" rx="4" fill="#C8D6EA"/>
+          <rect x="110" y="50" width="50" height="60" rx="4" fill="#C8D6EA"/>
+          <rect x="170" y="20" width="60" height="45" rx="4" fill="#C8D6EA"/>
+          <rect x="240" y="10" width="50" height="60" rx="4" fill="#C8D6EA"/>
+          <rect x="300" y="20" width="50" height="40" rx="4" fill="#C8D6EA"/>
+          <rect x="170" y="75" width="40" height="40" rx="4" fill="#C8D6EA"/>
+          <rect x="220" y="80" width="70" height="50" rx="4" fill="#C8D6EA"/>
+          <rect x="300" y="70" width="50" height="50" rx="4" fill="#C8D6EA"/>
+          <rect x="10" y="130" width="55" height="55" rx="4" fill="#C8D6EA"/>
+          <rect x="75" y="130" width="75" height="50" rx="4" fill="#C8D6EA"/>
+          <rect x="160" y="130" width="60" height="50" rx="4" fill="#C8D6EA"/>
+          <rect x="230" y="140" width="80" height="45" rx="4" fill="#C8D6EA"/>
+          <rect x="10" y="195" width="120" height="36" rx="4" fill="#C8D6EA"/>
+          <rect x="140" y="195" width="80" height="36" rx="4" fill="#C8D6EA"/>
+          <rect x="230" y="195" width="120" height="36" rx="4" fill="#C8D6EA"/>
+
+          <!-- roads -->
+          <line x1="0" y1="120" x2="361" y2="120" stroke="white" stroke-width="10"/>
+          <line x1="0" y1="120" x2="361" y2="120" stroke="#E8F0F8" stroke-width="8" stroke-dasharray="20,10"/>
+          <line x1="155" y1="0" x2="155" y2="240" stroke="white" stroke-width="10"/>
+          <line x1="155" y1="0" x2="155" y2="240" stroke="#E8F0F8" stroke-width="8" stroke-dasharray="20,10"/>
+          <line x1="0" y1="45" x2="155" y2="45" stroke="white" stroke-width="7"/>
+          <line x1="155" y1="185" x2="361" y2="185" stroke="white" stroke-width="7"/>
+          <line x1="290" y1="0" x2="290" y2="185" stroke="white" stroke-width="7"/>
+          <line x1="0" y1="185" x2="155" y2="185" stroke="white" stroke-width="7"/>
+
+          <!-- bus stop marker -->
+          <rect x="143" y="110" width="24" height="10" rx="5" fill="#94A3B8"/>
+          <text x="155" y="119" text-anchor="middle" font-size="6" fill="white" font-weight="bold">STOP</text>
+
+          <!-- ME marker (amber) -->
+          <circle cx="155" cy="120" r="18" fill="rgba(245,158,11,.15)"/>
+          <circle cx="155" cy="120" r="12" fill="rgba(245,158,11,.25)"/>
+          <circle cx="155" cy="120" r="7" fill="#F59E0B"/>
+          <circle cx="155" cy="120" r="3" fill="white"/>
+          <circle class="ripple-anim" cx="155" cy="120" r="8" fill="none" stroke="#F59E0B" stroke-width="2"/>
+          <circle class="ripple-anim2" cx="155" cy="120" r="8" fill="none" stroke="#F59E0B" stroke-width="1.5"/>
+          <text x="155" y="107" text-anchor="middle" font-size="9" fill="#92400E" font-weight="bold">Tu</text>
+
+          <!-- driver 1 (Carlos) -->
+          <g class="car-anim">
+            <circle r="18" fill="rgba(37,99,235,.1)"/>
+            <circle r="11" fill="rgba(37,99,235,.2)"/>
+            <circle r="7" fill="#2563EB"/>
+            <circle r="2.5" fill="white"/>
+            <circle class="ripple-anim3" r="7" fill="none" stroke="#2563EB" stroke-width="1.5"/>
+            <text y="-13" text-anchor="middle" font-size="8" fill="#1E40AF" font-weight="700">Carlos · 2 min</text>
+          </g>
+
+          <!-- driver 2 (Tia Helena) -->
+          <g class="car-anim2">
+            <circle r="16" fill="rgba(37,99,235,.1)"/>
+            <circle r="10" fill="rgba(37,99,235,.2)"/>
+            <circle r="6" fill="#3B82F6"/>
+            <circle r="2" fill="white"/>
+            <text y="-12" text-anchor="middle" font-size="8" fill="#1E40AF" font-weight="700">Helena · 8min</text>
+          </g>
+
+          <!-- passenger at stop -->
+          <circle cx="155" cy="140" r="5" fill="#8B5CF6"/>
+          <text x="155" y="154" text-anchor="middle" font-size="8" fill="#5B21B6" font-weight="600">João</text>
+        </svg>
+
+        <div class="map-btn-grp">
+          <button class="map-btn" onclick="toast('📍 Localização actualizada')"><i class="fas fa-location-crosshairs"></i></button>
+          <button class="map-btn"><i class="fas fa-plus"></i></button>
+          <button class="map-btn"><i class="fas fa-minus"></i></button>
+        </div>
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-dot leg-driver"></div>Motorista</div>
+          <div class="legend-item"><div class="legend-dot leg-me"></div>Tu</div>
+          <div class="legend-item"><div class="legend-dot leg-stop"></div>Paragem</div>
+        </div>
+      </div>
+
+      <div class="sec-hdr">
+        <div class="sec-title"><i class="fas fa-radar"></i> Proximidade em tempo real</div>
+      </div>
+      <div class="card-list" id="mapDriverList"></div>
+    </div>
+
+    <!-- REDE VIEW -->
+    <div class="tab-content" id="view-rede">
+      <div style="background:var(--navy);border-radius:var(--r-lg);padding:16px 18px;color:white;display:flex;align-items:center;gap:12px;">
+        <i class="fas fa-network-wired" style="font-size:28px;color:var(--amber);"></i>
+        <div>
+          <div style="font-family:Sora;font-weight:700;font-size:16px;">A Tua Rede</div>
+          <div style="font-size:13px;opacity:.7;margin-top:2px;">12 contactos · 4 agora activos</div>
+        </div>
+        <button onclick="toast('➕ Convite enviado por link')" style="margin-left:auto;background:var(--amber);border:none;border-radius:20px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;color:var(--navy);">
+          <i class="fas fa-user-plus"></i> Adicionar
+        </button>
+      </div>
+
+      <div class="rede-group">
+        <div class="rede-group-title">Família</div>
+        <div class="card-list" id="redeFamily"></div>
+      </div>
+      <div class="rede-group">
+        <div class="rede-group-title">Amigos</div>
+        <div class="card-list" id="redeAmigos"></div>
+      </div>
+      <div class="rede-group">
+        <div class="rede-group-title">Colegas de Trabalho</div>
+        <div class="card-list" id="redeColegas"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="setTab('home')">
+      <div class="nav-icon"><i class="fas fa-house"></i></div>
+      <div class="nav-pip"></div>
+      <div class="nav-label">Início</div>
+    </div>
+    <div class="nav-item" id="nav-map" onclick="setTab('map')">
+      <div class="nav-icon"><i class="fas fa-map"></i></div>
+      <div class="nav-pip"></div>
+      <div class="nav-label">Mapa</div>
+    </div>
+    <div class="nav-item" id="nav-rede" onclick="setTab('rede')">
+      <div class="nav-icon"><i class="fas fa-people-group"></i></div>
+      <div class="nav-pip"></div>
+      <div class="nav-label">Rede</div>
+    </div>
+    <div class="nav-item" id="nav-hist" onclick="openProfile()">
+      <div class="nav-icon"><i class="fas fa-clock-rotate-left"></i></div>
+      <div class="nav-pip"></div>
+      <div class="nav-label">Historial</div>
+    </div>
+  </div>
+
+  <!-- SOS BUTTON -->
+  <button class="sos-btn" onclick="triggerSOS()">SOS</button>
+
+  <!-- TOAST -->
+  <div class="toast" id="toastEl"></div>
+
+  <!-- ── MODALS ── -->
+
+  <!-- RIDE CONFIRM SHEET -->
+  <div class="sheet-overlay" id="confirmSheet">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title" id="confirmTitle">Pedir Boleia</div>
+      <div class="confirm-contact" id="confirmContact"></div>
+      <div style="background:var(--surface);border-radius:var(--r-md);padding:12px;margin-bottom:16px;">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">MENSAGEM (opcional)</div>
+        <div style="font-size:14px;font-weight:500;color:var(--text);background:white;border-radius:10px;padding:10px;border:1px solid var(--border);">
+          "Estou na paragem da Av. Lenine. Podes dar boleia até Talatona?"
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;display:flex;gap:6px;align-items:center;">
+        <i class="fas fa-shield-halved" style="color:var(--green)"></i>
+        Boleia verificada entre conhecidos. A tua localização é partilhada.
+      </div>
+      <div class="confirm-actions">
+        <button class="btn-lg btn-lg-cancel" onclick="closeSheet('confirmSheet')"><i class="fas fa-times"></i> Cancelar</button>
+        <button class="btn-lg btn-lg-confirm" onclick="confirmRide()"><i class="fas fa-check"></i> Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION SHEET -->
+  <div class="sheet-overlay" id="notifSheet">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Notificações</div>
+      <div id="notifList"></div>
+      <button class="btn-lg btn-lg-cancel" style="margin-top:12px;" onclick="closeSheet('notifSheet')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- QR SHEET -->
+  <div class="sheet-overlay" id="qrSheet">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Convidar Amigo</div>
+      <div class="qr-wrap">
+        <div class="qr-box"><i class="fas fa-qrcode"></i></div>
+        <div style="font-weight:600;color:var(--text)">ridefriend.ao/m/maria</div>
+        <div style="font-size:12px;color:var(--text3)">Peça ao amigo para ler com a câmara</div>
+      </div>
+      <div style="display:flex;gap:14px;justify-content:center;margin:16px 0;">
+        <div onclick="toast('💬 Partilhado via WhatsApp')" style="text-align:center;cursor:pointer;">
+          <div style="width:50px;height:50px;border-radius:50%;background:#D1FAE5;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:22px;color:#25D366;"><i class="fab fa-whatsapp"></i></div>
+          <div style="font-size:11px;color:var(--text2)">WhatsApp</div>
+        </div>
+        <div onclick="toast('📘 Partilhado via Facebook')" style="text-align:center;cursor:pointer;">
+          <div style="width:50px;height:50px;border-radius:50%;background:#DBEAFE;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:22px;color:#1877F2;"><i class="fab fa-facebook"></i></div>
+          <div style="font-size:11px;color:var(--text2)">Facebook</div>
+        </div>
+        <div onclick="toast('🔗 Link copiado!')" style="text-align:center;cursor:pointer;">
+          <div style="width:50px;height:50px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:22px;color:var(--text2);"><i class="fas fa-link"></i></div>
+          <div style="font-size:11px;color:var(--text2)">Copiar link</div>
+        </div>
+        <div onclick="toast('📲 SMS enviado!')" style="text-align:center;cursor:pointer;">
+          <div style="width:50px;height:50px;border-radius:50%;background:#F3E8FF;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:22px;color:#7C3AED;"><i class="fas fa-sms"></i></div>
+          <div style="font-size:11px;color:var(--text2)">SMS</div>
+        </div>
+      </div>
+      <button class="btn-lg btn-lg-cancel" onclick="closeSheet('qrSheet')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- PROFILE SHEET -->
+  <div class="sheet-overlay" id="profileSheet">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="profile-hero" style="margin-bottom:16px;">
+        <div class="profile-avatar">M</div>
+        <div>
+          <div class="profile-name">Maria Fernanda</div>
+          <div class="profile-rating">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+            <i class="fas fa-star"></i><i class="fas fa-star-half-stroke"></i>
+            4.8 · 47 boleias
+          </div>
+          <div style="font-size:12px;margin-top:4px;opacity:.6;">Luanda · Membro desde Jan 2024</div>
+        </div>
+      </div>
+      <div class="stat-row" style="margin-bottom:14px;">
+        <div class="stat-box"><div class="stat-num">32</div><div class="stat-lbl">Recebidas</div></div>
+        <div class="stat-box"><div class="stat-num">15</div><div class="stat-lbl">Dadas</div></div>
+        <div class="stat-box"><div class="stat-num" style="color:var(--green);">12</div><div class="stat-lbl">Contactos</div></div>
+      </div>
+      <div class="sec-title" style="margin-bottom:10px;"><i class="fas fa-clock-rotate-left"></i> Historial Recente</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="history-item">
+          <div class="history-icon h-received"><i class="fas fa-car-side"></i></div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">Boleia recebida de Carlos Silva</div>
+            <div style="font-size:12px;color:var(--text2);">Av. Lenine → Talatona · Ontem 17:42</div>
+          </div>
+          <div class="stars" style="margin-left:auto;">
+            <i class="fas fa-star" style="font-size:14px;color:var(--amber);"></i>
+            <span style="font-size:13px;font-weight:600;">5</span>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="history-icon h-given"><i class="fas fa-hand-holding-heart"></i></div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">Boleia dada a Ana Costa</div>
+            <div style="font-size:12px;color:var(--text2);">Talatona → Viana · 2ª feira 08:15</div>
+          </div>
+          <div class="stars" style="margin-left:auto;">
+            <i class="fas fa-star" style="font-size:14px;color:var(--amber);"></i>
+            <span style="font-size:13px;font-weight:600;">5</span>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="history-icon h-received"><i class="fas fa-car-side"></i></div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">Boleia recebida de Tia Helena</div>
+            <div style="font-size:12px;color:var(--text2);">Universidade → Rangel · Sáb 12:30</div>
+          </div>
+          <div class="stars" style="margin-left:auto;">
+            <i class="fas fa-star" style="font-size:14px;color:var(--amber);"></i>
+            <span style="font-size:13px;font-weight:600;">4</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-lg btn-lg-cancel" style="margin-top:16px;" onclick="closeSheet('profileSheet')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- RATING SHEET -->
+  <div class="sheet-overlay" id="ratingSheet">
+    <div class="sheet" style="text-align:center;">
+      <div class="sheet-handle"></div>
+      <div style="font-size:48px;margin-bottom:8px;">🎉</div>
+      <div class="sheet-title">Boleia Confirmada!</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:20px;">Carlos Silva chegará em <strong id="arrivalETA">2 min</strong></div>
+      <div style="background:var(--surface);border-radius:var(--r-md);padding:16px;margin-bottom:16px;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar blue" style="width:48px;height:48px;font-size:20px;">C</div>
+          <div>
+            <div style="font-weight:700;color:var(--text);">Carlos Silva</div>
+            <div style="font-size:13px;color:var(--text2);">AA-12-BB · Toyota Corolla Branco</div>
+            <div style="display:flex;gap:3px;margin-top:4px;">
+              <i class="fas fa-star" style="color:var(--amber);font-size:13px;"></i>
+              <i class="fas fa-star" style="color:var(--amber);font-size:13px;"></i>
+              <i class="fas fa-star" style="color:var(--amber);font-size:13px;"></i>
+              <i class="fas fa-star" style="color:var(--amber);font-size:13px;"></i>
+              <i class="fas fa-star" style="color:var(--amber);font-size:13px;"></i>
+              <span style="font-size:12px;color:var(--text2);margin-left:4px;">4.9</span>
+            </div>
+          </div>
+          <button class="btn-sm btn-call" style="margin-left:auto;" onclick="toast('📞 A ligar para Carlos...')">
+            <i class="fas fa-phone"></i>
+          </button>
+        </div>
+        <div class="approach-bar" style="margin-top:12px;">
+          <div class="approach-fill" id="approachFill" style="width:85%;"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;text-align:right;">a aproximar-se...</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-lg btn-lg-cancel" style="flex:1;" onclick="closeSheet('ratingSheet');toast('❌ Boleia cancelada')">Cancelar</button>
+        <button class="btn-lg btn-lg-confirm" style="flex:1;" onclick="closeSheet('ratingSheet');toast('✅ Estás a bordo!')">
+          <i class="fas fa-check"></i> Estou a bordo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOS SHEET -->
+  <div class="sheet-overlay" id="sosSheet">
+    <div class="sheet" style="text-align:center;">
+      <div class="sheet-handle"></div>
+      <div style="font-size:60px;margin-bottom:8px;">🆘</div>
+      <div class="sheet-title" style="color:var(--red);">Pedido de Emergência</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:20px;">A tua localização será enviada a:</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;text-align:left;">
+        <div style="background:var(--red-l);border-radius:var(--r-md);padding:12px;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-user" style="color:var(--red);"></i>
+          <span style="font-weight:600;color:var(--text);">Contato de emergência · Pai</span>
+        </div>
+        <div style="background:var(--red-l);border-radius:var(--r-md);padding:12px;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-shield-halved" style="color:var(--red);"></i>
+          <span style="font-weight:600;color:var(--text);">Polícia Nacional · 113</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-lg btn-lg-cancel" style="flex:1;" onclick="closeSheet('sosSheet')">Cancelar</button>
+        <button class="btn-lg" style="flex:1;background:var(--red);color:white;" onclick="closeSheet('sosSheet');toast('🆘 SOS enviado! Ajuda a caminho.')">
+          <i class="fas fa-siren-on"></i> Enviar SOS
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+const DRIVERS = [
+  { id:1, name:'Carlos Silva', rel:'col', relLabel:'Colega', initials:'C', avatarClass:'blue', dist:'0.9 km', eta:2, plate:'AA-12-BB', status:'online', rating:4.9 },
+  { id:2, name:'Tia Helena',   rel:'fam', relLabel:'Família', initials:'H', avatarClass:'amber', dist:'2.8 km', eta:8, plate:'22-PH-99', status:'busy', rating:4.7 },
+  { id:3, name:'Miguel Ramos', rel:'ami', relLabel:'Amigo', initials:'M', avatarClass:'green', dist:'1.5 km', eta:5, plate:'77-XL-01', status:'online', rating:4.8 }
+];
+
+const COPASS = [
+  { id:101, name:'João Pereira', rel:'viz', relLabel:'Vizinho', initials:'J', avatarClass:'purple', dist:'50m', espera:'8 min' },
+  { id:102, name:'Ana Rodrigues', rel:'ami', relLabel:'Amiga', initials:'A', avatarClass:'green', dist:'na paragem', espera:'3 min' }
+];
+
+const WAITING = [
+  { id:201, name:'João Pereira', rel:'viz', relLabel:'Vizinho', initials:'J', avatarClass:'purple', paragem:'Av. Lenine · P.4', aprox:'a 60m' },
+  { id:202, name:'Ana Rodrigues', rel:'ami', relLabel:'Amiga', initials:'A', avatarClass:'green', paragem:'Av. Lenine · P.4', aprox:'na paragem' }
+];
+
+const ROUTE = [
+  { name:'Bairro Operário',  km:'5 km', persons:2 },
+  { name:'Centralidade do Kilamba', km:'11 km', persons:1 }
+];
+
+const REDE = {
+  familia: [
+    { name:'Tia Helena', initials:'H', avatarClass:'amber', status:'busy', note:'Em rota · 2.8 km' },
+    { name:'Irmão Nuno',  initials:'N', avatarClass:'blue', status:'offline', note:'Offline' }
+  ],
+  amigos: [
+    { name:'Miguel Ramos', initials:'M', avatarClass:'green', status:'online', note:'Disponível · 1.5 km' },
+    { name:'Ana Rodrigues', initials:'A', avatarClass:'purple', status:'online', note:'Na paragem contigo' }
+  ],
+  colegas: [
+    { name:'Carlos Silva', initials:'C', avatarClass:'blue', status:'online', note:'Disponível · 0.9 km' },
+    { name:'Dra. Filomena', initials:'F', avatarClass:'amber', status:'offline', note:'Offline' }
+  ]
+};
+
+const NOTIFS = [
+  { icon:'fa-car', cls:'ni-green', text:'Carlos Silva está a 2 min da tua paragem.', time:'Agora mesmo' },
+  { icon:'fa-bell', cls:'ni-amber', text:'Miguel Ramos passou pela tua paragem há 5 min — não viu que estavas.', time:'Há 8 min' },
+  { icon:'fa-star', cls:'ni-green', text:'João Pereira avaliou a tua boleia com 5 estrelas!', time:'Ontem 18:20' },
+  { icon:'fa-user-plus', cls:'ni-blue', text:'Ana Rodrigues aceitou o teu convite e juntou-se à RideFriend.', time:'2ª feira' }
+];
+
+let role = 'passenger';
+let activeTab = 'home';
+let etaTimers = {};
+let driverOn = true;
+let alertSent = false;
+let selectedDriver = null;
+
+// ── RENDER HELPERS ──
+
+function relClass(rel) {
+  return { fam:'rel-fam', ami:'rel-ami', col:'rel-col', viz:'rel-viz' }[rel] || 'rel-col';
+}
+
+function etaHtml(eta) {
+  if (eta <= 2) return `<span class="eta-badge close"><i class="fas fa-location-arrow"></i> ${eta} min</span>`;
+  if (eta <= 5) return `<span class="eta-badge"><i class="fas fa-clock"></i> ${eta} min</span>`;
+  return `<span class="eta-badge far"><i class="fas fa-clock"></i> ${eta} min</span>`;
+}
+
+function avatarHtml(d, extra='') {
+  const statusDot = d.status ? `<div class="online-dot ${d.status}"></div>` : '';
+  return `<div class="avatar ${d.avatarClass||'blue'}" ${extra}>${d.initials}${statusDot}</div>`;
+}
+
+// ── RENDER PASSENGER DRIVERS ──
+function renderDriverList() {
+  const el = document.getElementById('driverList');
+  if (!el) return;
+  el.innerHTML = DRIVERS.map(d => `
+    <div class="p-card ${d.eta<=2?'approaching':''}" onclick="openConfirm(${d.id})">
+      ${avatarHtml(d)}
+      <div class="card-body">
+        <div class="card-name">${d.name} <span class="rel-tag ${relClass(d.rel)}">${d.relLabel}</span></div>
+        <div class="card-sub">
+          <i class="fas fa-route" style="font-size:11px;"></i> ${d.dist}
+          &nbsp;·&nbsp; <i class="fas fa-car" style="font-size:11px;"></i> ${d.plate}
+        </div>
+        <div style="margin-top:5px;display:flex;align-items:center;gap:8px;">
+          ${etaHtml(d.eta)}
+          <span style="font-size:11px;color:var(--text3);"><i class="fas fa-star" style="color:var(--amber);"></i> ${d.rating}</span>
+        </div>
+        ${d.eta<=2?`<div class="approach-bar"><div class="approach-fill" style="width:88%;"></div></div>`:''}
+      </div>
+      <div class="card-actions">
+        <button class="btn-icon" onclick="event.stopPropagation();callPerson('${d.name}')"><i class="fas fa-phone"></i></button>
+        <button class="btn-sm btn-ask" onclick="event.stopPropagation();openConfirm(${d.id})">Pedir</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER CO-PASSENGERS ──
+function renderCoPax() {
+  const el = document.getElementById('coPassList');
+  if (!el) return;
+  el.innerHTML = COPASS.map(p => `
+    <div class="p-card">
+      ${avatarHtml(p)}
+      <div class="card-body">
+        <div class="card-name">${p.name} <span class="rel-tag ${relClass(p.rel)}">${p.relLabel}</span></div>
+        <div class="card-sub"><i class="fas fa-map-marker-alt" style="font-size:11px;"></i> ${p.dist} · há ${p.espera}</div>
+      </div>
+      <button class="btn-icon" onclick="callPerson('${p.name}')"><i class="fas fa-phone"></i></button>
+    </div>
+  `).join('');
+}
+
+// ── RENDER DRIVER: WAITING ──
+function renderWaiting() {
+  const el = document.getElementById('waitingList');
+  if (!el) return;
+  el.innerHTML = WAITING.map(p => `
+    <div class="p-card">
+      ${avatarHtml(p)}
+      <div class="card-body">
+        <div class="card-name">${p.name} <span class="rel-tag ${relClass(p.rel)}">${p.relLabel}</span></div>
+        <div class="card-sub"><i class="fas fa-map-pin" style="font-size:11px;"></i> ${p.paragem}</div>
+        <div style="margin-top:4px;"><span class="eta-badge ${p.aprox==='na paragem'?'close':''}"><i class="fas fa-location-arrow"></i> ${p.aprox}</span></div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-icon" onclick="callPerson('${p.name}')"><i class="fas fa-phone"></i></button>
+        <button class="btn-sm btn-offer" onclick="offerRide('${p.name}')">Oferecer</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER DRIVER: ROUTE STOPS ──
+function renderRoute() {
+  const el = document.getElementById('routeList');
+  if (!el) return;
+  el.innerHTML = ROUTE.map(r => `
+    <div class="p-card">
+      <div style="width:42px;height:42px;border-radius:50%;background:var(--blue-l);display:flex;align-items:center;justify-content:center;font-size:16px;color:#1D4ED8;flex-shrink:0;">
+        <i class="fas fa-map-pin"></i>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${r.name}</div>
+        <div class="card-sub"><i class="fas fa-route" style="font-size:11px;"></i> ${r.km} &nbsp;·&nbsp; <i class="fas fa-users" style="font-size:11px;"></i> ${r.persons} pessoa(s)</div>
+      </div>
+      <button class="btn-sm btn-call" onclick="toast('🗺️ A navegar para ${r.name}')"><i class="fas fa-diamond-turn-right"></i></button>
+    </div>
+  `).join('');
+}
+
+// ── RENDER MAP PROXIMITY LIST ──
+function renderMapList() {
+  const el = document.getElementById('mapDriverList');
+  if (!el) return;
+  el.innerHTML = DRIVERS.map(d => `
+    <div class="p-card">
+      ${avatarHtml(d)}
+      <div class="card-body">
+        <div class="card-name">${d.name} <span class="rel-tag ${relClass(d.rel)}">${d.relLabel}</span></div>
+        <div class="card-sub"><i class="fas fa-location-dot" style="font-size:11px;"></i> ${d.dist} de distância</div>
+        <div style="margin-top:5px;">${etaHtml(d.eta)}</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-icon" onclick="callPerson('${d.name}')"><i class="fas fa-phone"></i></button>
+        <button class="btn-sm btn-ask" onclick="openConfirm(${d.id})">Pedir</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER REDE ──
+function renderRede() {
+  function contactCard(c) {
+    return `
+    <div class="p-card">
+      ${avatarHtml(c)}
+      <div class="card-body">
+        <div class="card-name">${c.name}</div>
+        <div class="card-sub" style="margin-top:3px;">
+          <span class="online-dot ${c.status}" style="position:relative;width:8px;height:8px;border:none;display:inline-block;border-radius:50;flex-shrink:0;"></span>
+          ${c.note}
+        </div>
+      </div>
+      <button class="btn-icon" onclick="callPerson('${c.name}')"><i class="fas fa-phone"></i></button>
+    </div>`;
+  }
+  const ef = document.getElementById('redeFamily');
+  const ea = document.getElementById('redeAmigos');
+  const ec = document.getElementById('redeColegas');
+  if (ef) ef.innerHTML = REDE.familia.map(contactCard).join('');
+  if (ea) ea.innerHTML = REDE.amigos.map(contactCard).join('');
+  if (ec) ec.innerHTML = REDE.colegas.map(contactCard).join('');
+}
+
+// ── RENDER NOTIFS ──
+function renderNotifs() {
+  const el = document.getElementById('notifList');
+  if (!el) return;
+  el.innerHTML = NOTIFS.map(n => `
+    <div class="notif-item">
+      <div class="notif-icon ${n.cls}"><i class="fas ${n.icon}"></i></div>
+      <div class="notif-body">
+        <div class="notif-text">${n.text}</div>
+        <div class="notif-time">${n.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── ROLE SWITCH ──
+window.setRole = function(r) {
+  role = r;
+  document.getElementById('tab-pass').classList.toggle('active', r==='passenger');
+  document.getElementById('tab-driv').classList.toggle('active', r==='driver');
+  document.getElementById('view-passenger').classList.toggle('active', r==='passenger' && activeTab==='home');
+  document.getElementById('view-driver').classList.toggle('active', r==='driver' && activeTab==='home');
+  toast(r==='passenger' ? '👋 Modo Passageiro activado' : '🚗 Modo Motorista activado');
+};
+
+// ── TAB SWITCH ──
+window.setTab = function(tab) {
+  activeTab = tab;
+  ['home','map','rede'].forEach(t => {
+    const v = t==='home'
+      ? (role==='passenger'?'passenger':'driver')
+      : t;
+    const el = document.getElementById('view-'+v);
+    if(el) el.classList.remove('active');
+  });
+  const navIds = { home:'nav-home', map:'nav-map', rede:'nav-rede' };
+  ['nav-home','nav-map','nav-rede','nav-hist'].forEach(n => document.getElementById(n).classList.remove('active'));
+  if (tab==='home') {
+    document.getElementById(role==='passenger'?'view-passenger':'view-driver').classList.add('active');
+    document.getElementById('nav-home').classList.add('active');
+  } else if (tab==='map') {
+    document.getElementById('view-map').classList.add('active');
+    document.getElementById('nav-map').classList.add('active');
+  } else if (tab==='rede') {
+    document.getElementById('view-rede').classList.add('active');
+    document.getElementById('nav-rede').classList.add('active');
+  }
+};
+
+// ── ALERT BUTTON ──
+window.sendAlert = function() {
+  if (alertSent) { toast('✅ Rede já foi alertada'); return; }
+  alertSent = true;
+  const btn = document.getElementById('alertBtn');
+  const ring = document.getElementById('alertRing');
+  const icon = document.getElementById('alertIcon');
+  const txt = document.getElementById('alertText');
+  btn.classList.add('sent');
+  icon.className = 'fas fa-check';
+  txt.textContent = 'Rede Alertada! · 6 contactos notificados';
+  ring.style.animation = 'none';
+  setTimeout(() => {
+    btn.classList.remove('sent');
+    icon.className = 'fas fa-broadcast-tower';
+    txt.textContent = 'Estou Aqui! · Avisar Rede';
+    alertSent = false;
+  }, 5000);
+  toast('📡 Localização enviada a 6 contactos da rede');
+};
+
+// ── CONFIRM SHEET ──
+window.openConfirm = function(driverId) {
+  const d = DRIVERS.find(x => x.id===driverId);
+  if(!d) return;
+  selectedDriver = d;
+  document.getElementById('confirmTitle').textContent = `Pedir Boleia a ${d.name}`;
+  document.getElementById('confirmContact').innerHTML = `
+    <div class="avatar ${d.avatarClass}" style="position:relative;">
+      ${d.initials}
+      <div class="online-dot online"></div>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:16px;color:var(--text);">${d.name}</div>
+      <div style="font-size:13px;color:var(--text2);">${d.plate} · <i class="fas fa-star" style="color:var(--amber);"></i> ${d.rating}</div>
+      <div style="margin-top:4px;">${etaHtml(d.eta)}</div>
+    </div>
+  `;
+  document.getElementById('confirmSheet').classList.add('open');
+};
+
+window.confirmRide = function() {
+  closeSheet('confirmSheet');
+  if(selectedDriver) {
+    document.getElementById('arrivalETA').textContent = selectedDriver.eta + ' min';
+    document.getElementById('confirmSheet').classList.remove('open');
+    setTimeout(() => document.getElementById('ratingSheet').classList.add('open'), 200);
+  }
+};
+
+// ── DRIVER TOGGLE ──
+window.toggleDriverStatus = function() {
+  driverOn = !driverOn;
+  const tog = document.getElementById('driverToggle');
+  const lbl = document.getElementById('driverStatusLabel');
+  tog.classList.toggle('on', driverOn);
+  lbl.textContent = driverOn ? 'Disponível' : 'Inactivo';
+  lbl.style.color = driverOn ? 'var(--green)' : 'var(--text3)';
+  toast(driverOn ? '✅ Localização partilhada com a rede' : '⏸ Localização pausada');
+};
+
+// ── OFFER RIDE ──
+window.offerRide = function(name) {
+  toast(`🚗 Oferta enviada a ${name}!`);
+};
+
+// ── CALL ──
+window.callPerson = function(name) {
+  toast(`📞 A ligar para ${name}...`);
+};
+
+// ── SOS ──
+window.triggerSOS = function() {
+  document.getElementById('sosSheet').classList.add('open');
+};
+
+// ── NOTIFICATIONS ──
+window.openNotifs = function() {
+  renderNotifs();
+  document.getElementById('notifDot').style.display = 'none';
+  document.getElementById('notifSheet').classList.add('open');
+};
+
+// ── QR ──
+window.openQR = function() {
+  document.getElementById('qrSheet').classList.add('open');
+};
+
+// ── PROFILE ──
+window.openProfile = function() {
+  document.getElementById('profileSheet').classList.add('open');
+};
+
+// ── CLOSE SHEET ──
+window.closeSheet = function(id) {
+  document.getElementById(id).classList.remove('open');
+};
+
+// Close on overlay click
+document.querySelectorAll('.sheet-overlay').forEach(ov => {
+  ov.addEventListener('click', function(e) {
+    if(e.target === this) this.classList.remove('open');
+  });
+});
+
+// ── TOAST ──
+let toastTimer;
+window.toast = function(msg) {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+};
+
+// ── ETA COUNTDOWN ──
+function startETACountdown() {
+  setInterval(() => {
+    DRIVERS.forEach(d => {
+      if(d.eta > 0) d.eta = Math.max(0, d.eta - (1/60));
+    });
+  }, 1000);
+}
+
+// ── WAIT TIME INCREMENT ──
+let waitMin = 14;
+setInterval(() => {
+  waitMin++;
+  const el = document.getElementById('waitTime');
+  if(el) el.textContent = waitMin + ' min';
+}, 60000);
+
+// ── INIT ──
+renderDriverList();
+renderCoPax();
+renderWaiting();
+renderRoute();
+renderMapList();
+renderRede();
+startETACountdown();
+
+// Show notif dot
+document.getElementById('notifDot').style.display = 'block';
+
+})();
+</script>
+</body>
+</html>

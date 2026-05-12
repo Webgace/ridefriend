@@ -2,6 +2,7 @@
   "expo": {
     "name": "RideFriend",
     "slug": "ridefriend",
+    "owner": "tiibs",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -31,6 +32,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D1F38"
       },
+      "usesCleartextTraffic": true,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -57,7 +59,7 @@
     },
     "scheme": "ridefriend",
     "extra": {
-      "apiBaseUrl": "https://72.61.45.31/ridefriend"
+      "apiBaseUrl": "http://72.61.45.31/ridefriend"
     },
     "plugins": [
       [

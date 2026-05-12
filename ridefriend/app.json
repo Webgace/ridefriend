@@ -56,6 +56,9 @@
       "favicon": "./assets/favicon.png"
     },
     "scheme": "ridefriend",
+    "extra": {
+      "apiBaseUrl": "https://72.61.45.31/ridefriend"
+    },
     "plugins": [
       [
         "expo-location",

@@ -49,3 +49,7 @@ desktop.ini
 *.mmkv
 *.sqlite
 *.sqlite-journal
+
+# Claude Code local settings (contain run-time permission grants that may leak args)
+.claude/
+

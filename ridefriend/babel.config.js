@@ -23,7 +23,9 @@ module.exports = function (api) {
           extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
         },
       ],
-      'react-native-reanimated/plugin',
+      // react-native-reanimated v4 split the worklets plugin into a separate package.
+      // Must be listed LAST. See https://docs.swmansion.com/react-native-reanimated/docs/guides/migration-from-3.x
+      'react-native-worklets/plugin',
     ],
   };
 };

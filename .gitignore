@@ -53,3 +53,9 @@ desktop.ini
 # Claude Code local settings (contain run-time permission grants that may leak args)
 .claude/
 
+
+# Build artefacts copied locally (downloaded APKs etc)
+ProjectDocs/APK/
+*.apk
+*.aab
+

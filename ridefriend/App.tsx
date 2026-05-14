@@ -13,6 +13,7 @@ import { initI18n } from '@i18n/index';
 import RootNavigator from '@navigation/RootNavigator';
 import ToastHost from '@components/ui/Toast';
 import ConfirmSheetHost from '@components/ui/ConfirmSheet';
+import ErrorBoundary from '@components/ui/ErrorBoundary';
 import {
   attachNotificationListeners,
   detachNotificationListeners,
@@ -24,6 +25,14 @@ import { useEmergencyContactStore } from '@store/emergencyContactStore';
 const queryClient = new QueryClient();
 
 export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppInner />
+    </ErrorBoundary>
+  );
+}
+
+function AppInner() {
   const [i18nReady, setI18nReady] = useState(false);
   const [fontsLoaded] = useSora({
     Sora_700Bold,

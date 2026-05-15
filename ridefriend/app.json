@@ -4,7 +4,6 @@
     "slug": "ridefriend",
     "owner": "tiibs",
     "version": "1.0.0",
-    "newArchEnabled": false,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

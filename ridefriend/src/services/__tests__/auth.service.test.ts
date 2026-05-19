@@ -101,7 +101,8 @@ describe('sendOTP', () => {
 describe('verifyOTP', () => {
   it('regista sessão e perfil quando o código é válido', async () => {
     const session = { access_token: 'abc', expires_at: 1234567890 };
-    mockedVerifyOtp.mockResolvedValueOnce({ data: { session } });
+    // O wrapper supabase.ts desempacota `{data, error}` e devolve apenas `data` ({user, session}).
+    mockedVerifyOtp.mockResolvedValueOnce({ session, user: null });
     mockedGetUser.mockResolvedValueOnce({
       id: 'u1',
       phone: '+244923000001',
@@ -115,7 +116,7 @@ describe('verifyOTP', () => {
     expect(authState.session).toEqual(session);
     expect(authState.isAuthenticated).toBe(true);
     expect(authState.user).toMatchObject({ id: 'u1', name: 'Ana', marketCode: 'ao' });
-    expect(result.data.session).toBe(session);
+    expect(result.session).toBe(session);
   });
 
   it('lança erro pt-AO se a verificação falhar', async () => {
@@ -124,7 +125,7 @@ describe('verifyOTP', () => {
   });
 
   it('lança erro se a resposta vier sem sessão', async () => {
-    mockedVerifyOtp.mockResolvedValueOnce({ data: { session: null } });
+    mockedVerifyOtp.mockResolvedValueOnce({ session: null, user: null });
     await expect(verifyOTP('+244923000001', '123456')).rejects.toThrow(/Não foi possível verificar/);
   });
 });

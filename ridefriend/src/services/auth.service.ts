@@ -61,12 +61,13 @@ export async function verifyOTP(phone: string, token: string) {
   const marketCode = useMarketStore.getState().config?.code;
 
   try {
+    // supabaseVerifyOtp já desempacota `{data, error}` e devolve apenas `data` ({user, session}).
     const response = await supabaseVerifyOtp(phone, token);
-    if (!response?.data?.session) {
+    if (!response?.session) {
       throw new Error('Missing session after OTP verification');
     }
 
-    authStore.setSession(response.data.session);
+    authStore.setSession(response.session);
     authStore.setIsAuthenticated(true);
 
     const currentUser = await getUser();
@@ -83,8 +84,8 @@ export async function verifyOTP(phone: string, token: string) {
             isDriver: false,
             isPassenger: true,
             marketCode: marketCode ?? 'ao',
-            createdAt: response.data.session.expires_at?.toString() ?? new Date().toISOString(),
-            updatedAt: response.data.session.expires_at?.toString() ?? new Date().toISOString(),
+            createdAt: response.session.expires_at?.toString() ?? new Date().toISOString(),
+            updatedAt: response.session.expires_at?.toString() ?? new Date().toISOString(),
           }
         : null,
     );

@@ -77,7 +77,8 @@ export default function PhoneInputScreen() {
       navigation.navigate('OTPVerify' as never, { phone: fullPhone } as never);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Falha ao enviar o código.';
-      showToast({ message, tone: 'error' });
+      // Erro de envio é diagnóstico — dura mais tempo para o utilizador conseguir ler.
+      showToast({ message, tone: 'error', durationMs: 8000 });
     } finally {
       setIsSending(false);
     }
@@ -118,7 +119,9 @@ export default function PhoneInputScreen() {
             />
           </View>
           <Text style={styles.helpText}>
-            Entre {selectedConfig.phoneMinDigits} e {selectedConfig.phoneMaxDigits} dígitos local.
+            {selectedConfig.phoneMinDigits === selectedConfig.phoneMaxDigits
+              ? `${selectedConfig.phoneMinDigits} dígitos.`
+              : `Entre ${selectedConfig.phoneMinDigits} e ${selectedConfig.phoneMaxDigits} dígitos.`}
           </Text>
         </View>
 

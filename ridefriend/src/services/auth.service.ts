@@ -51,7 +51,8 @@ export async function sendOTP(phone: string): Promise<void> {
     await signInWithPhone(phone);
   } catch (error) {
     console.error('sendOTP error', error);
-    throw new Error(getAuthErrorMessage('otpSendFailed', config.code));
+    const raw = error instanceof Error ? error.message : String(error);
+    throw new Error(`${getAuthErrorMessage('otpSendFailed', config.code)} (${raw})`);
   }
 }
 

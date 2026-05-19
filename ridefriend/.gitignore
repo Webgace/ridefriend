@@ -41,3 +41,7 @@ coverage/
 # Build
 dist/
 build/
+
+# Expo prebuild outputs (managed workflow — regenerated on demand)
+android/
+ios/

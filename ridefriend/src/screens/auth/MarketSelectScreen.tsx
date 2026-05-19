@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import i18n from '@i18n/index';
-import { useMarket } from '@hooks/useMarket';
+import { useMarketStore } from '@store/marketStore';
 import { MarketCode } from '@types/index';
 import { getAllMarkets } from '@config/markets';
 
@@ -37,7 +37,10 @@ function languageForMarket(code: MarketCode) {
 
 export default function MarketSelectScreen({ onSelect }: Props) {
   const navigation = useNavigation();
-  const { config, setMarket } = useMarket();
+  // Lê directamente do store: este ecrã CORRE quando `config` ainda é null,
+  // pelo que não pode usar `useMarket()` (que faz throw nesse caso).
+  const setMarket = useMarketStore((s) => s.setMarket);
+  const activeCode = useMarketStore((s) => s.config?.code);
 
   const handleSelect = async (marketCode: MarketCode) => {
     const selected = getAllMarkets().find((market) => market.code === marketCode);
@@ -57,7 +60,7 @@ export default function MarketSelectScreen({ onSelect }: Props) {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Escolhe o teu mercado</Text>
       {getAllMarkets().map((market) => {
-        const active = market.code === config?.code;
+        const active = market.code === activeCode;
         return (
           <TouchableOpacity
             key={market.code}

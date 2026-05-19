@@ -21,13 +21,13 @@ const formatLocalPhone = (value: string) => value.replace(/[^0-9]/g, '');
 
 export default function PhoneInputScreen() {
   const navigation = useNavigation();
-  const { config } = useMarket();
+  const market = useMarket();
   const showToast = useUiHostStore((s) => s.showToast);
   const [phone, setPhone] = useState('');
   const [isPickerVisible, setPickerVisible] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  const selectedConfig = config;
+  const selectedConfig = market;
 
   const phoneDigits = useMemo(() => formatLocalPhone(phone), [phone]);
   const normalizedPhone = useMemo(() => {
@@ -83,16 +83,8 @@ export default function PhoneInputScreen() {
     }
   };
 
-  const { setMarket } = useMarket();
+  const { setMarket } = market;
   const marketOptions = getAllMarkets();
-
-  if (!selectedConfig) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.infoText}>A carregar configurações do mercado…</Text>
-      </View>
-    );
-  }
 
   return (
     <KeyboardAvoidingView
@@ -284,13 +276,5 @@ const styles = StyleSheet.create({
   modalCloseText: {
     color: '#2563EB',
     fontWeight: '700',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  infoText: {
-    color: '#6B7280',
   },
 });

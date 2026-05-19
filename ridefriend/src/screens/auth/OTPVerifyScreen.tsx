@@ -38,7 +38,7 @@ export default function OTPVerifyScreen() {
       navigation.navigate('Onboarding' as never);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Falha ao verificar o código.';
-      showToast({ message, tone: 'error' });
+      showToast({ message, tone: 'error', durationMs: 8000 });
     } finally {
       setIsVerifying(false);
     }

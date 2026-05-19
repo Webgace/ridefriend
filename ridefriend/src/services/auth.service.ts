@@ -92,7 +92,8 @@ export async function verifyOTP(phone: string, token: string) {
     return response;
   } catch (error) {
     console.error('verifyOTP error', error);
-    throw new Error(getAuthErrorMessage('otpVerifyFailed', marketCode));
+    const raw = error instanceof Error ? error.message : String(error);
+    throw new Error(`${getAuthErrorMessage('otpVerifyFailed', marketCode)} (${raw})`);
   }
 }
 

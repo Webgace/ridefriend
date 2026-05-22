@@ -1,177 +1,204 @@
-// Ficheiro: src/screens/network/NetworkScreen.tsx | Função: rede de contactos agrupada + filtros + swipe (P10)
+// Ficheiro: src/screens/network/NetworkScreen.tsx | Função: rede com hero card + acções por linha (Ligar/Convidar/Editar)
+// Ref. mockup: ecrã "A Tua Rede" com cartão navy + listagem por grupo + 3 acções por contacto.
 import React, { useCallback, useMemo, useState } from 'react';
 import {
+  Linking,
   Pressable,
   RefreshControl,
-  SectionList,
+  ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Swipeable } from 'react-native-gesture-handler';
-import { COLORS, FONTS, RELATION_COLORS } from '@constants/theme';
-import { useT } from '@hooks/useT';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, FONTS } from '@constants/theme';
 import { useContacts, ContactRow } from '@hooks/useContacts';
 import { useLocation } from '@hooks/useLocation';
+import { useAuthStore } from '@store/authStore';
 import { useUiHostStore } from '@store/uiHostStore';
 import AvatarBadge from '@components/ui/AvatarBadge';
+import SOSButton from '@components/ui/SOSButton';
+import SOSConfirmSheet from '@components/sos/SOSConfirmSheet';
 import AddContactSheet from '@components/network/AddContactSheet';
+import EditContactSheet from '@components/network/EditContactSheet';
+import ContactActionsSheet from '@components/network/ContactActionsSheet';
 import { ContactGroup } from '@types/index';
-
-type Filter = 'all' | 'active' | 'drivers';
 
 const GROUP_ORDER: ContactGroup[] = ['family', 'friend', 'colleague', 'neighbour'];
 const GROUP_LABEL: Record<ContactGroup, string> = {
-  family: 'Família',
-  friend: 'Amigos',
-  colleague: 'Colegas',
-  neighbour: 'Vizinhos',
+  family: 'FAMÍLIA',
+  friend: 'AMIGOS',
+  colleague: 'COLEGAS',
+  neighbour: 'VIZINHOS',
 };
 
-function statusLabel(c: ContactRow): string {
-  if (c.status === 'offline') return 'Offline';
-  const distance =
-    c.distanceKm !== null ? ` · ${c.distanceKm.toFixed(1)} km` : '';
-  if (c.status === 'busy') return `A caminho${distance}`;
-  return `Disponível${distance}`;
-}
-
 export default function NetworkScreen() {
-  const { t } = useT('common');
+  const navigation = useNavigation<any>();
+  const { user } = useAuthStore();
   const { myLocation } = useLocation();
   const myCoords = useMemo(
     () => (myLocation ? { lat: myLocation.lat, lng: myLocation.lng } : null),
     [myLocation],
   );
-  const { contacts, byGroup, isLoading, refresh, removeContact } = useContacts(myCoords);
+  const { contacts, byGroup, isLoading, refresh, removeContact, updateContact } =
+    useContacts(myCoords);
+
   const showConfirm = useUiHostStore((s) => s.showConfirm);
   const showToast = useUiHostStore((s) => s.showToast);
 
-  const [filter, setFilter] = useState<Filter>('all');
   const [addOpen, setAddOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<ContactRow | null>(null);
+  const [actionsTarget, setActionsTarget] = useState<ContactRow | null>(null);
+  const [sosOpen, setSosOpen] = useState(false);
 
   const activeCount = contacts.filter((c) => c.status !== 'offline').length;
+  const inviteUrl = user?.id
+    ? `https://ridefriend.app/invite/${user.id}`
+    : 'https://ridefriend.app';
 
-  const sections = useMemo(() => {
-    const result: { title: string; data: ContactRow[] }[] = [];
-    for (const g of GROUP_ORDER) {
-      const list = byGroup[g].filter((c) => {
-        if (filter === 'active') return c.status !== 'offline';
-        if (filter === 'drivers') return c.isDriver;
-        return true;
-      });
-      if (list.length > 0) result.push({ title: GROUP_LABEL[g], data: list });
-    }
-    return result;
-  }, [byGroup, filter]);
-
-  const handleRemove = useCallback(
-    (c: ContactRow) => {
-      showConfirm({
-        title: 'Remover contacto?',
-        message: `${c.name} deixará de ver a tua localização.`,
-        confirmLabel: 'Remover',
-        cancelLabel: 'Cancelar',
-        destructive: true,
-        onConfirm: async () => {
-          try {
-            await removeContact(c.id);
-            showToast({ message: 'Contacto removido.', tone: 'success' });
-          } catch (error) {
-            const message = error instanceof Error ? error.message : 'Falha ao remover.';
-            showToast({ message, tone: 'error' });
-          }
-        },
-      });
+  const handleInvite = useCallback(
+    async (c: ContactRow) => {
+      if (c.hasAccount) {
+        showToast({
+          message: `${c.name} já está no RideFriend.`,
+          tone: 'info',
+        });
+        return;
+      }
+      const phone = c.phone.replace(/[^+\d]/g, '').replace(/^\+/, '');
+      const text = `Olá ${c.name}! Junta-te à minha rede no RideFriend: ${inviteUrl}`;
+      const wa = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
+      try {
+        const can = await Linking.canOpenURL(wa);
+        if (can) {
+          await Linking.openURL(wa);
+          return;
+        }
+      } catch {
+        // continua para fallback
+      }
+      try {
+        await Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`);
+        return;
+      } catch {
+        // continua para fallback
+      }
+      try {
+        await Share.share({ message: text });
+      } catch {
+        /* utilizador cancelou */
+      }
     },
-    [removeContact, showConfirm, showToast],
+    [inviteUrl, showToast],
   );
 
-  const renderRightActions = useCallback(
-    (c: ContactRow) => (
-      <Pressable
-        onPress={() => handleRemove(c)}
-        style={({ pressed }) => [styles.swipeAction, pressed && styles.swipeActionPressed]}
-      >
-        <Text style={styles.swipeActionText}>Remover</Text>
-      </Pressable>
-    ),
-    [handleRemove],
+  const handleSaveEdit = useCallback(
+    async (patch: { name: string; phone: string; group: ContactGroup }) => {
+      if (!editTarget) return;
+      try {
+        await updateContact(editTarget.id, patch);
+        showToast({ message: 'Contacto actualizado.', tone: 'success' });
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Falha ao actualizar.';
+        showToast({ message, tone: 'error' });
+        throw e;
+      }
+    },
+    [editTarget, updateContact, showToast],
   );
+
+  const handleRemoveFromEdit = useCallback(() => {
+    if (!editTarget) return;
+    const c = editTarget;
+    showConfirm({
+      title: 'Remover contacto?',
+      message: `${c.name} deixará de ver a tua localização.`,
+      confirmLabel: 'Remover',
+      cancelLabel: 'Cancelar',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await removeContact(c.id);
+          showToast({ message: 'Contacto removido.', tone: 'success' });
+        } catch (e) {
+          const message = e instanceof Error ? e.message : 'Falha ao remover.';
+          showToast({ message, tone: 'error' });
+        }
+      },
+    });
+  }, [editTarget, removeContact, showConfirm, showToast]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Rede</Text>
-        <Text style={styles.subtitle}>
-          {activeCount} {activeCount === 1 ? 'contacto activo agora' : 'contactos activos agora'}
-        </Text>
-      </View>
-
-      <View style={styles.filters}>
-        {(['all', 'active', 'drivers'] as Filter[]).map((f) => (
-          <Pressable
-            key={f}
-            onPress={() => setFilter(f)}
-            style={[styles.filterChip, filter === f && styles.filterChipActive]}
-          >
-            <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
-              {f === 'all' ? 'Todos' : f === 'active' ? 'Activos' : 'Motoristas'}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <SectionList
-        sections={sections}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={COLORS.navy} />
         }
-        renderSectionHeader={({ section }) => (
-          <Text style={styles.sectionTitle}>{section.title}</Text>
-        )}
-        renderItem={({ item }) => (
-          <Swipeable renderRightActions={() => renderRightActions(item)} overshootRight={false}>
-            <View style={styles.row}>
-              <AvatarBadge name={item.name} group={item.group} status={item.status} />
-              <View style={styles.rowBody}>
-                <Text style={styles.rowName} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                <Text style={styles.rowMeta} numberOfLines={1}>
-                  {statusLabel(item)}
-                </Text>
-              </View>
-              <View style={[styles.groupPill, { backgroundColor: RELATION_COLORS[item.group].bg }]}>
-                <Text style={[styles.groupPillText, { color: RELATION_COLORS[item.group].fg }]}>
-                  {GROUP_LABEL[item.group]}
-                </Text>
-              </View>
-            </View>
-          </Swipeable>
-        )}
-        ItemSeparatorComponent={() => <View style={styles.sep} />}
-        ListEmptyComponent={
-          isLoading ? null : (
-            <View style={styles.empty}>
-              <Text style={styles.emptyText}>
-                {t('no_contacts') === 'no_contacts' ? 'Ainda não tens contactos.' : t('no_contacts')}
-              </Text>
-            </View>
-          )
-        }
-      />
-
-      <Pressable
-        onPress={() => setAddOpen(true)}
-        style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
-        accessibilityLabel="Adicionar contacto"
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.fabText}>+ Adicionar Contacto</Text>
-      </Pressable>
+        <View style={styles.hero}>
+          <View style={styles.heroIconWrap}>
+            <Ionicons name="people" size={26} color={COLORS.amber} />
+          </View>
+          <View style={styles.heroBody}>
+            <Text style={styles.heroTitle}>A Tua Rede</Text>
+            <Text style={styles.heroSub}>
+              {contacts.length} {contacts.length === 1 ? 'contacto' : 'contactos'} · {activeCount}{' '}
+              agora {activeCount === 1 ? 'activo' : 'activos'}
+            </Text>
+          </View>
+          <Pressable
+            onPress={() => setAddOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Adicionar contacto"
+            style={({ pressed }) => [styles.addBtn, pressed && styles.pressed]}
+          >
+            <Ionicons name="person-add" size={14} color={COLORS.white} />
+            <Text style={styles.addBtnText}>Adicionar</Text>
+          </Pressable>
+        </View>
+
+        {GROUP_ORDER.map((g) => {
+          const list = byGroup[g];
+          if (list.length === 0) return null;
+          return (
+            <View key={g} style={styles.section}>
+              <Text style={styles.sectionTitle}>{GROUP_LABEL[g]}</Text>
+              <View style={styles.rowList}>
+                {list.map((c) => (
+                  <ContactRowView
+                    key={c.id}
+                    contact={c}
+                    onCallPress={() => setActionsTarget(c)}
+                    onInvitePress={() => handleInvite(c)}
+                    onMorePress={() => setEditTarget(c)}
+                  />
+                ))}
+              </View>
+            </View>
+          );
+        })}
+
+        {contacts.length === 0 && !isLoading ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>Ainda não tens contactos.</Text>
+            <Text style={styles.emptyBody}>Toca em "Adicionar" para começar.</Text>
+          </View>
+        ) : null}
+      </ScrollView>
+
+      <SOSButton onLongPress={() => setSosOpen(true)} />
+
+      <SOSConfirmSheet
+        visible={sosOpen}
+        myLocation={myLocation ? { lat: myLocation.lat, lng: myLocation.lng } : null}
+        onClose={() => setSosOpen(false)}
+        onConfigureContact={() => navigation.navigate('EmergencyContact')}
+      />
 
       <AddContactSheet
         visible={addOpen}
@@ -181,82 +208,236 @@ export default function NetworkScreen() {
           void refresh();
         }}
       />
+
+      <EditContactSheet
+        visible={editTarget !== null}
+        contact={editTarget}
+        onClose={() => setEditTarget(null)}
+        onSave={handleSaveEdit}
+        onRemove={handleRemoveFromEdit}
+      />
+
+      <ContactActionsSheet
+        visible={actionsTarget !== null}
+        contactName={actionsTarget?.name ?? ''}
+        contactPhone={actionsTarget?.phone ?? ''}
+        onClose={() => setActionsTarget(null)}
+      />
     </SafeAreaView>
+  );
+}
+
+interface RowProps {
+  contact: ContactRow;
+  onCallPress: () => void;
+  onInvitePress: () => void;
+  onMorePress: () => void;
+}
+
+function ContactRowView({ contact, onCallPress, onInvitePress, onMorePress }: RowProps) {
+  const hasAccount = contact.hasAccount;
+  const statusLine = hasAccount
+    ? contact.status === 'offline'
+      ? 'Sem partilha agora'
+      : `Disponível${contact.distanceKm !== null ? ` · ${contact.distanceKm.toFixed(1)} km` : ''}`
+    : 'Ainda não está na app';
+
+  return (
+    <View style={styles.row}>
+      <AvatarBadge name={contact.name} group={contact.group} status={contact.status} />
+
+      <View style={styles.rowBody}>
+        <View style={styles.rowNameLine}>
+          <Text style={styles.rowName} numberOfLines={1}>
+            {contact.name}
+          </Text>
+          {hasAccount ? (
+            <View style={styles.badgeJoined}>
+              <Ionicons name="checkmark-circle" size={11} color="#047857" />
+              <Text style={styles.badgeJoinedText}>No RideFriend</Text>
+            </View>
+          ) : (
+            <View style={styles.badgePhantom}>
+              <Text style={styles.badgePhantomText}>Sem conta</Text>
+            </View>
+          )}
+        </View>
+        <Text style={styles.rowMeta} numberOfLines={1}>
+          {statusLine}
+        </Text>
+      </View>
+
+      <View style={styles.actions}>
+        <ActionButton onPress={onCallPress} accessibilityLabel={`Contactar ${contact.name}`}>
+          <Ionicons name="call" size={15} color={COLORS.navy} />
+        </ActionButton>
+        <ActionButton
+          onPress={onInvitePress}
+          accessibilityLabel={
+            hasAccount
+              ? `${contact.name} já está no RideFriend`
+              : `Convidar ${contact.name} via WhatsApp`
+          }
+          tint={hasAccount ? undefined : 'amber'}
+          dim={hasAccount}
+        >
+          <Ionicons
+            name="person-add"
+            size={15}
+            color={hasAccount ? COLORS.text3 : COLORS.white}
+          />
+        </ActionButton>
+        <ActionButton onPress={onMorePress} accessibilityLabel={`Editar ${contact.name}`}>
+          <Ionicons name="ellipsis-vertical" size={15} color={COLORS.navy} />
+        </ActionButton>
+      </View>
+    </View>
+  );
+}
+
+interface ActionBtnProps {
+  onPress: () => void;
+  accessibilityLabel: string;
+  children: React.ReactNode;
+  tint?: 'amber';
+  dim?: boolean;
+}
+
+function ActionButton({ onPress, accessibilityLabel, children, tint, dim }: ActionBtnProps) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => [
+        styles.actionBtn,
+        tint === 'amber' && styles.actionBtnAmber,
+        dim && styles.actionBtnDim,
+        pressed && styles.pressed,
+      ]}
+    >
+      {children}
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.surface },
-  header: { paddingHorizontal: 20, paddingTop: 16, gap: 4 },
-  title: { fontFamily: FONTS.soraBold, fontSize: 26, color: COLORS.text },
-  subtitle: { fontFamily: FONTS.bodyRegular, fontSize: 13, color: COLORS.text2 },
+  scroll: { padding: 16, paddingBottom: 120, gap: 4 },
 
-  filters: { flexDirection: 'row', paddingHorizontal: 16, paddingTop: 12, gap: 8 },
-  filterChip: {
+  hero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: COLORS.navy,
+    borderRadius: 20,
+    paddingVertical: 14,
     paddingHorizontal: 14,
+    marginBottom: 12,
+  },
+  heroIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(217,119,6,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroBody: { flex: 1, gap: 2 },
+  heroTitle: { fontFamily: FONTS.soraBold, fontSize: 18, color: COLORS.white },
+  heroSub: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.75)',
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: COLORS.amber,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: COLORS.gray100,
   },
-  filterChipActive: { backgroundColor: COLORS.navy },
-  filterText: { fontFamily: FONTS.bodySemi, fontSize: 12, color: COLORS.text2 },
-  filterTextActive: { color: COLORS.white },
+  addBtnText: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 12,
+    color: COLORS.white,
+  },
 
-  listContent: { padding: 16, paddingBottom: 120 },
+  section: { gap: 8, marginBottom: 12 },
   sectionTitle: {
     fontFamily: FONTS.soraBold,
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.text2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.06 * 13,
-    marginTop: 14,
-    marginBottom: 8,
+    letterSpacing: 0.08 * 12,
+    paddingHorizontal: 4,
   },
+  rowList: { gap: 8 },
 
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
     backgroundColor: COLORS.white,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 12,
     borderRadius: 16,
-    gap: 12,
   },
-  rowBody: { flex: 1, gap: 2 },
-  rowName: { fontFamily: FONTS.soraBold, fontSize: 15, color: COLORS.text },
-  rowMeta: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2 },
-  groupPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  groupPillText: { fontFamily: FONTS.bodySemi, fontSize: 11 },
-  sep: { height: 8 },
-
-  swipeAction: {
-    backgroundColor: COLORS.red,
-    paddingHorizontal: 22,
-    justifyContent: 'center',
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 16,
-    marginLeft: 8,
+  rowBody: { flex: 1, gap: 4 },
+  rowNameLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rowName: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 14,
+    color: COLORS.text,
+    flexShrink: 1,
   },
-  swipeActionPressed: { opacity: 0.85 },
-  swipeActionText: { color: COLORS.white, fontFamily: FONTS.soraBold, fontSize: 13 },
-
-  empty: { paddingVertical: 32, alignItems: 'center' },
-  emptyText: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 14 },
-
-  fab: {
-    position: 'absolute',
-    right: 18,
-    bottom: 24,
-    backgroundColor: COLORS.navy,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+  badgeJoined: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderRadius: 999,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 6,
   },
-  fabPressed: { opacity: 0.92, transform: [{ scale: 0.98 }] },
-  fabText: { color: COLORS.white, fontFamily: FONTS.soraBold, fontSize: 13 },
+  badgeJoinedText: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 10,
+    color: '#047857',
+  },
+  badgePhantom: {
+    backgroundColor: COLORS.gray100,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  badgePhantomText: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 10,
+    color: COLORS.text2,
+  },
+  rowMeta: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    color: COLORS.text2,
+  },
+
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  actionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.gray100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtnAmber: { backgroundColor: COLORS.amber },
+  actionBtnDim: { opacity: 0.55 },
+
+  empty: { paddingVertical: 32, alignItems: 'center', gap: 4 },
+  emptyTitle: { fontFamily: FONTS.soraBold, fontSize: 15, color: COLORS.text },
+  emptyBody: { fontFamily: FONTS.bodyRegular, fontSize: 13, color: COLORS.text2 },
+
+  pressed: { opacity: 0.85 },
 });

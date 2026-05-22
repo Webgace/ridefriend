@@ -17,6 +17,8 @@ import { COLORS, FONTS, RELATION_COLORS } from '@constants/theme';
 import { supabase } from '@services/supabase';
 import { useAuthStore } from '@store/authStore';
 import { useUiHostStore } from '@store/uiHostStore';
+import { useMarket } from '@hooks/useMarket';
+import { toE164 } from '@utils/phone';
 import { ContactGroup } from '@types/index';
 
 type Tab = 'agenda' | 'invite' | 'search';
@@ -48,6 +50,7 @@ interface Props {
 
 export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
   const { user } = useAuthStore();
+  const market = useMarket();
   const showToast = useUiHostStore((s) => s.showToast);
 
   const [tab, setTab] = useState<Tab>('agenda');
@@ -84,6 +87,46 @@ export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
         return;
       }
       showToast({ message: `${contactName} adicionado.`, tone: 'success' });
+      onAdded();
+    },
+    [user, group, onAdded, showToast],
+  );
+
+  /**
+   * Adiciona um contacto "phantom" (sem conta RideFriend ainda). O número fica
+   * marcado para auto-link quando essa pessoa se registar. Persiste em
+   * contacts.alias_name + alias_phone + phone_normalized (trigger SQL).
+   */
+  const addPhantomRow = useCallback(
+    async (input: { name: string; phone: string }) => {
+      if (!user) return;
+      const rawPhone = input.phone.trim();
+      const name = input.name.trim();
+      if (!rawPhone) {
+        showToast({ message: 'Telefone obrigatório.', tone: 'error' });
+        return;
+      }
+      // Canonicaliza para E.164 (+CC…) — o trigger SQL `normalize_phone` só strip
+      // dígitos + "0" inicial, por isso ambos os lados (users.phone e alias_phone)
+      // precisam de já estar com o country code para o auto-link funcionar.
+      const phone = toE164(rawPhone, market.phonePrefix);
+      const insertPayload = {
+        user_id: user.id,
+        contact_user_id: null,
+        group_type: group,
+        alias_name: name || null,
+        alias_phone: phone,
+      };
+      const { error } = await supabase.from('contacts').insert(insertPayload as never);
+      if (error) {
+        if (error.code === '23505') {
+          showToast({ message: `${name || phone} já está na rede.`, tone: 'info' });
+          return;
+        }
+        showToast({ message: error.message, tone: 'error' });
+        return;
+      }
+      showToast({ message: `${name || phone} adicionado.`, tone: 'success' });
       onAdded();
     },
     [user, group, onAdded, showToast],
@@ -141,25 +184,35 @@ export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
 
   const handleAgendaPick = useCallback(
     async (c: AgendaContact) => {
-      // Procura o primeiro telefone que tenha conta RideFriend.
-      const phone = c.phones.find((p) => registeredSet.has(p));
-      if (!phone) {
-        showToast({ message: `${c.name} ainda não usa RideFriend.`, tone: 'info' });
+      // Caminho 1: já está no RideFriend — liga ao utilizador real.
+      const registeredPhone = c.phones.find((p) => registeredSet.has(p));
+      if (registeredPhone) {
+        const { data: u, error } = await supabase
+          .from('users')
+          .select('id, name')
+          .eq('phone', registeredPhone)
+          .maybeSingle();
+        if (error || !u) {
+          showToast({ message: 'Não foi possível encontrar o utilizador.', tone: 'error' });
+          return;
+        }
+        await addContactRow(u.id, u.name);
         return;
       }
-      const { data: u, error } = await supabase
-        .from('users')
-        .select('id, name')
-        .eq('phone', phone)
-        .maybeSingle();
-      if (error || !u) {
-        showToast({ message: 'Não foi possível encontrar o utilizador.', tone: 'error' });
+      // Caminho 2: não está no RideFriend — adiciona como phantom com o
+      // primeiro número da agenda. Auto-link quando se registar.
+      const fallback = c.phones[0];
+      if (!fallback) {
+        showToast({ message: `${c.name} não tem número guardado.`, tone: 'error' });
         return;
       }
-      await addContactRow(u.id, u.name);
+      await addPhantomRow({ name: c.name, phone: fallback });
     },
-    [registeredSet, addContactRow, showToast],
+    [registeredSet, addContactRow, addPhantomRow, showToast],
   );
+
+  const [phantomMode, setPhantomMode] = useState<{ phone: string } | null>(null);
+  const [phantomName, setPhantomName] = useState('');
 
   const handleSearch = useCallback(async () => {
     const phone = searchQuery.trim();
@@ -172,6 +225,7 @@ export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
     }
     setSearchLoading(true);
     setSearchResult(null);
+    setPhantomMode(null);
     try {
       const { data, error } = await supabase
         .from('users')
@@ -180,7 +234,9 @@ export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
         .maybeSingle();
       if (error) throw error;
       if (!data) {
-        showToast({ message: 'Sem conta com esse número.', tone: 'info' });
+        // Não tem conta — propõe adicionar como phantom.
+        setPhantomMode({ phone });
+        setPhantomName('');
         return;
       }
       setSearchResult({ id: data.id, name: data.name, phone: data.phone });
@@ -294,7 +350,11 @@ export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
                           <View style={styles.onAppBadge}>
                             <Text style={styles.onAppBadgeText}>Já usa RideFriend</Text>
                           </View>
-                        ) : null}
+                        ) : (
+                          <View style={styles.phantomBadge}>
+                            <Text style={styles.phantomBadgeText}>Adicionar</Text>
+                          </View>
+                        )}
                       </Pressable>
                     );
                   }}
@@ -358,6 +418,36 @@ export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
                   </Pressable>
                 </View>
               ) : null}
+
+              {phantomMode ? (
+                <View style={styles.phantomCard}>
+                  <Text style={styles.phantomTitle}>Sem conta com esse número</Text>
+                  <Text style={styles.phantomBody}>
+                    Podes guardá-lo na tua rede mesmo assim. Quando essa pessoa se registar com{' '}
+                    <Text style={styles.phantomPhoneInline}>{phantomMode.phone}</Text>, ligamos
+                    automaticamente o contacto.
+                  </Text>
+                  <TextInput
+                    placeholder="Nome (opcional)"
+                    placeholderTextColor={COLORS.text3}
+                    value={phantomName}
+                    onChangeText={setPhantomName}
+                    autoCapitalize="words"
+                    style={styles.input}
+                  />
+                  <Pressable
+                    onPress={async () => {
+                      await addPhantomRow({ name: phantomName, phone: phantomMode.phone });
+                      setPhantomMode(null);
+                      setPhantomName('');
+                      setSearchQuery('');
+                    }}
+                    style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.primaryBtnText}>Adicionar como contacto novo</Text>
+                  </Pressable>
+                </View>
+              ) : null}
             </View>
           )}
 
@@ -414,6 +504,29 @@ const styles = StyleSheet.create({
   agendaPhone: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2 },
   onAppBadge: { backgroundColor: COLORS.greenLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   onAppBadgeText: { fontFamily: FONTS.bodySemi, fontSize: 11, color: COLORS.green },
+  phantomBadge: {
+    backgroundColor: COLORS.amber,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  phantomBadgeText: { fontFamily: FONTS.bodySemi, fontSize: 11, color: COLORS.white },
+
+  phantomCard: {
+    backgroundColor: '#FEF7E6',
+    borderRadius: 14,
+    padding: 14,
+    gap: 10,
+    marginTop: 4,
+  },
+  phantomTitle: { fontFamily: FONTS.soraBold, fontSize: 13, color: COLORS.text },
+  phantomBody: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    color: COLORS.text2,
+    lineHeight: 17,
+  },
+  phantomPhoneInline: { fontFamily: FONTS.bodySemi, color: COLORS.text },
 
   inviteUrl: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2 },
   qrFallback: {

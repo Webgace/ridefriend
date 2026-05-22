@@ -1,4 +1,5 @@
-// Ficheiro: src/screens/profile/ProfileScreen.tsx | Função: perfil + stats + historial + avaliações (P10)
+// Ficheiro: src/screens/profile/ProfileScreen.tsx | Função: perfil + stats + historial resumido + avaliações (P10 v2)
+// Polido para alinhar com a linguagem visual do Home/Map/Rede (hero navy, cards arredondados, pills).
 import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS } from '@constants/theme';
 import { useAuthStore } from '@store/authStore';
 import { useUiHostStore } from '@store/uiHostStore';
@@ -20,13 +22,14 @@ import { useReceivedRatings } from '@hooks/useReceivedRatings';
 import AvatarBadge from '@components/ui/AvatarBadge';
 import RideHistoryItem from '@components/profile/RideHistoryItem';
 
-function Stars({ score, size = 14 }: { score: number; size?: number }) {
+const RECENT_RIDES_LIMIT = 3;
+
+function Stars({ score, size = 13, dim = 'rgba(255,255,255,0.35)' }: { score: number; size?: number; dim?: string }) {
+  const filled = Math.round(score);
   return (
     <Text style={{ color: COLORS.amber, fontFamily: FONTS.soraBold, fontSize: size }}>
-      {'★'.repeat(Math.round(score))}
-      <Text style={{ color: COLORS.gray300 }}>
-        {'★'.repeat(Math.max(0, 5 - Math.round(score)))}
-      </Text>
+      {'★'.repeat(filled)}
+      <Text style={{ color: dim }}>{'★'.repeat(Math.max(0, 5 - filled))}</Text>
     </Text>
   );
 }
@@ -37,7 +40,7 @@ export default function ProfileScreen() {
   const showConfirm = useUiHostStore((s) => s.showConfirm);
 
   const { contacts, isLoading: contactsLoading, refresh: refreshContacts } = useContacts(null);
-  const { rides, isLoading: ridesLoading, refresh: refreshRides } = useRideHistory(10);
+  const { rides, isLoading: ridesLoading, refresh: refreshRides } = useRideHistory(20);
   const { ratings, isLoading: ratingsLoading, refresh: refreshRatings } = useReceivedRatings(5);
 
   const stats = useMemo(() => {
@@ -45,6 +48,8 @@ export default function ProfileScreen() {
     const given = rides.filter((r) => r.role === 'driver').length;
     return { received, given, network: contacts.length };
   }, [rides, contacts]);
+
+  const recentRides = rides.slice(0, RECENT_RIDES_LIMIT);
 
   const refreshAll = async () => {
     await Promise.all([refreshContacts(), refreshRides(), refreshRatings()]);
@@ -63,6 +68,10 @@ export default function ProfileScreen() {
     });
   };
 
+  const openHistoryTab = () => {
+    navigation.navigate('MainTabs', { screen: 'History' });
+  };
+
   const isLoading = contactsLoading || ridesLoading || ratingsLoading;
 
   return (
@@ -72,60 +81,114 @@ export default function ProfileScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refreshAll} tintColor={COLORS.navy} />
         }
+        showsVerticalScrollIndicator={false}
       >
+        {/* Hero navy card */}
         <View style={styles.hero}>
-          <AvatarBadge name={user?.name ?? '?'} size={86} status="online" />
-          <View style={styles.heroBody}>
-            <Text style={styles.heroName}>{user?.name ?? '—'}</Text>
-            <Text style={styles.heroSub}>{user?.phone ?? ''}</Text>
-            <View style={styles.heroRatingRow}>
-              <Stars score={user?.rating ?? 0} />
-              <Text style={styles.heroRatingText}>
-                {(user?.rating ?? 0).toFixed(1)} · {user?.totalRides ?? 0} boleias
+          <View style={styles.heroDecorTop} />
+          <View style={styles.heroDecorBottom} />
+
+          <View style={styles.heroRow}>
+            <AvatarBadge name={user?.name ?? '?'} size={72} status="online" />
+            <View style={styles.heroBody}>
+              <Text style={styles.heroName} numberOfLines={1}>
+                {user?.name ?? '—'}
               </Text>
+              <Text style={styles.heroPhone} numberOfLines={1}>
+                {user?.phone ?? ''}
+              </Text>
+              <View style={styles.heroRatingRow}>
+                <Stars score={user?.rating ?? 0} />
+                <Text style={styles.heroRatingText}>
+                  {(user?.rating ?? 0).toFixed(1)} · {user?.totalRides ?? 0} boleias
+                </Text>
+              </View>
             </View>
           </View>
         </View>
 
+        {/* Stats row */}
         <View style={styles.statsRow}>
           <Stat label="Recebidas" value={stats.received} />
           <Stat label="Dadas" value={stats.given} />
           <Stat label="Rede" value={stats.network} />
         </View>
 
+        {/* Quick actions */}
         <View style={styles.actionsRow}>
-          <ActionButton label="Editar Perfil" onPress={() => navigation.navigate('EditProfile')} />
-          <ActionButton label="Definições" onPress={() => navigation.navigate('Settings')} />
+          <ActionPill
+            icon={<Ionicons name="settings-outline" size={16} color={COLORS.text} />}
+            label="Definições"
+            onPress={() => navigation.navigate('Settings')}
+          />
+          <ActionPill
+            icon={<Ionicons name="time-outline" size={16} color={COLORS.text} />}
+            label="Histórico"
+            onPress={openHistoryTab}
+          />
+          <ActionPill
+            icon={<Ionicons name="shield-outline" size={16} color={COLORS.text} />}
+            label="Emergência"
+            onPress={() => navigation.navigate('EmergencyContact')}
+          />
         </View>
 
-        <Section title="Historial Recente">
+        {user?.isAdmin ? (
+          <Pressable
+            onPress={() => navigation.navigate('Admin')}
+            accessibilityRole="button"
+            accessibilityLabel="Painel admin"
+            style={({ pressed }) => [styles.adminBtn, pressed && styles.pressed]}
+          >
+            <Ionicons name="shield-checkmark" size={16} color={COLORS.white} />
+            <Text style={styles.adminBtnText}>Painel admin</Text>
+            <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.7)" />
+          </Pressable>
+        ) : null}
+
+        {/* Recent rides */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Últimas Boleias</Text>
+            {rides.length > RECENT_RIDES_LIMIT ? (
+              <Pressable onPress={openHistoryTab} accessibilityRole="button">
+                <Text style={styles.sectionLink}>Ver tudo →</Text>
+              </Pressable>
+            ) : null}
+          </View>
           {ridesLoading ? (
             <ActivityIndicator color={COLORS.navy} style={{ marginVertical: 16 }} />
-          ) : rides.length === 0 ? (
-            <Text style={styles.empty}>Ainda sem boleias.</Text>
+          ) : recentRides.length === 0 ? (
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyText}>Ainda sem boleias.</Text>
+            </View>
           ) : (
-            <View style={{ gap: 8 }}>
-              {rides.map((r) => (
+            <View style={styles.list}>
+              {recentRides.map((r) => (
                 <RideHistoryItem key={r.id} ride={r} />
               ))}
             </View>
           )}
-        </Section>
+        </View>
 
-        <Section title="Avaliações Recentes">
+        {/* Recent ratings */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Avaliações Recentes</Text>
           {ratingsLoading ? (
             <ActivityIndicator color={COLORS.navy} style={{ marginVertical: 16 }} />
           ) : ratings.length === 0 ? (
-            <Text style={styles.empty}>Sem avaliações ainda.</Text>
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyText}>Sem avaliações ainda.</Text>
+            </View>
           ) : (
-            <View style={{ gap: 8 }}>
+            <View style={styles.list}>
               {ratings.map((r) => (
                 <View key={r.id} style={styles.ratingCard}>
                   <View style={styles.ratingHeader}>
                     <AvatarBadge name={r.raterName} size={36} status="offline" />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.ratingName}>{r.raterName}</Text>
-                      <Stars score={r.score} size={12} />
+                      <Stars score={r.score} size={12} dim={COLORS.gray300} />
                     </View>
                   </View>
                   {r.comment ? <Text style={styles.ratingComment}>{r.comment}</Text> : null}
@@ -133,12 +196,16 @@ export default function ProfileScreen() {
               ))}
             </View>
           )}
-        </Section>
+        </View>
 
+        {/* Logout */}
         <Pressable
           onPress={handleLogout}
+          accessibilityRole="button"
+          accessibilityLabel="Sair"
           style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
         >
+          <Ionicons name="log-out-outline" size={16} color={COLORS.red} />
           <Text style={styles.logoutBtnText}>Sair</Text>
         </Pressable>
       </ScrollView>
@@ -155,66 +222,120 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function ActionButton({ label, onPress }: { label: string; onPress: () => void }) {
+function ActionPill({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.actionBtn, pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [styles.actionPill, pressed && styles.pressed]}
     >
-      <Text style={styles.actionBtnText}>{label}</Text>
+      {icon}
+      <Text style={styles.actionPillText}>{label}</Text>
     </Pressable>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {children}
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.surface },
-  content: { padding: 16, paddingBottom: 80, gap: 16 },
+  content: { padding: 16, paddingBottom: 60, gap: 14 },
 
   hero: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 22,
+    padding: 18,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  heroDecorTop: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(245,158,11,0.12)',
+    top: -50,
+    right: -40,
+  },
+  heroDecorBottom: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: 'rgba(245,158,11,0.08)',
+    bottom: -30,
+    right: 30,
+  },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  heroBody: { flex: 1, gap: 3 },
+  heroName: { fontFamily: FONTS.soraBold, fontSize: 22, color: COLORS.white },
+  heroPhone: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  heroRatingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
-    padding: 16,
-    borderRadius: 20,
-    gap: 16,
+    gap: 8,
+    marginTop: 2,
   },
-  heroBody: { flex: 1, gap: 4 },
-  heroName: { fontFamily: FONTS.soraBold, fontSize: 22, color: COLORS.text },
-  heroSub: { fontFamily: FONTS.bodyRegular, fontSize: 13, color: COLORS.text2 },
-  heroRatingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
-  heroRatingText: { fontFamily: FONTS.bodySemi, fontSize: 12, color: COLORS.text2 },
+  heroRatingText: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.85)',
+  },
 
   statsRow: { flexDirection: 'row', gap: 8 },
   stat: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 14,
+    paddingVertical: 14,
     borderRadius: 16,
     alignItems: 'center',
+    gap: 2,
   },
   statValue: { fontFamily: FONTS.soraBold, fontSize: 22, color: COLORS.navy },
-  statLabel: { fontFamily: FONTS.bodySemi, fontSize: 11, color: COLORS.text2, marginTop: 2 },
+  statLabel: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 11,
+    color: COLORS.text2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.05 * 11,
+  },
 
   actionsRow: { flexDirection: 'row', gap: 8 },
-  actionBtn: {
+  actionPill: {
     flex: 1,
-    backgroundColor: COLORS.navy,
-    paddingVertical: 13,
-    borderRadius: 14,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: COLORS.white,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  actionBtnText: { color: COLORS.white, fontFamily: FONTS.soraBold, fontSize: 13 },
+  actionPillText: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 12,
+    color: COLORS.text,
+  },
 
-  section: { gap: 8 },
+  section: { gap: 10 },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   sectionTitle: {
     fontFamily: FONTS.soraBold,
     fontSize: 13,
@@ -222,21 +343,75 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.06 * 13,
   },
+  sectionLink: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 12,
+    color: COLORS.navy,
+  },
 
-  ratingCard: { backgroundColor: COLORS.white, padding: 14, borderRadius: 16, gap: 8 },
+  list: { gap: 8 },
+
+  emptyCard: {
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13,
+  },
+
+  ratingCard: {
+    backgroundColor: COLORS.white,
+    padding: 14,
+    borderRadius: 16,
+    gap: 8,
+  },
   ratingHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   ratingName: { fontFamily: FONTS.soraBold, fontSize: 13, color: COLORS.text },
-  ratingComment: { fontFamily: FONTS.bodyRegular, fontSize: 13, color: COLORS.text2 },
+  ratingComment: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13,
+    color: COLORS.text2,
+  },
+
+  adminBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.navy,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 14,
+  },
+  adminBtnText: {
+    flex: 1,
+    color: COLORS.white,
+    fontFamily: FONTS.soraBold,
+    fontSize: 14,
+  },
 
   logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     backgroundColor: COLORS.redLight,
     paddingVertical: 14,
     borderRadius: 14,
-    alignItems: 'center',
-    marginTop: 8,
+    marginTop: 4,
   },
-  logoutBtnText: { color: COLORS.red, fontFamily: FONTS.soraBold, fontSize: 14 },
+  logoutBtnText: {
+    color: COLORS.red,
+    fontFamily: FONTS.soraBold,
+    fontSize: 14,
+  },
 
-  empty: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 13, paddingVertical: 8 },
   pressed: { opacity: 0.85 },
 });

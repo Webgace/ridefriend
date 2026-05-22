@@ -1,6 +1,6 @@
 // Ficheiro: src/screens/home/PassengerHomeScreen.tsx | Função: ecrã principal do passageiro (P5)
 // Ref. mockup: layout "ECRÃ PRINCIPAL (Passageiro)" no RideFriend_Design_Reference.txt
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -15,6 +15,7 @@ import { useT } from '@hooks/useT';
 import { useLocation } from '@hooks/useLocation';
 import { useNearbyContacts, useNearbyPassengersAtStop } from '@hooks/useNearbyContacts';
 import { useRideRequest } from '@hooks/useRideRequest';
+import { useWeather } from '@hooks/useWeather';
 import { useAuthStore } from '@store/authStore';
 import { useMarketStore } from '@store/marketStore';
 import { useUiHostStore } from '@store/uiHostStore';
@@ -45,10 +46,39 @@ export default function PassengerHomeScreen() {
   const { nearbyDrivers, isLoading, refresh } = useNearbyContacts(myCoords, NEARBY_RADIUS_KM);
   const { nearbyPassengers } = useNearbyPassengersAtStop(myCoords, 100);
   const { requestRide, status, error } = useRideRequest();
+  const { temperatureC } = useWeather(myCoords);
 
   const [selectedDriver, setSelectedDriver] = useState<NearbyDriver | null>(null);
   const [submittingRide, setSubmittingRide] = useState(false);
   const [sosOpen, setSosOpen] = useState(false);
+  const [waitingFor, setWaitingFor] = useState<string | undefined>(undefined);
+
+  // Conta há quanto tempo o utilizador está na paragem actual. Reinicia ao mudar de paragem.
+  const stopName = nearestStop?.name ?? null;
+  const arrivalAtStopRef = useRef<number | null>(null);
+  const lastStopNameRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (stopName !== lastStopNameRef.current) {
+      lastStopNameRef.current = stopName;
+      arrivalAtStopRef.current = stopName ? Date.now() : null;
+    }
+    if (!stopName) {
+      setWaitingFor(undefined);
+      return;
+    }
+    const tick = () => {
+      const since = arrivalAtStopRef.current;
+      if (!since) {
+        setWaitingFor(undefined);
+        return;
+      }
+      const mins = Math.max(0, Math.floor((Date.now() - since) / 60_000));
+      setWaitingFor(`${mins} min`);
+    };
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => clearInterval(id);
+  }, [stopName]);
 
   // Inicia modo passageiro automaticamente.
   useEffect(() => {
@@ -137,7 +167,9 @@ export default function PassengerHomeScreen() {
           <View style={styles.header}>
             <HeroLocationCard
               stopName={nearestStop?.name ?? null}
+              waitingFor={waitingFor}
               nearbyCount={nearbyDrivers.length}
+              temperatureC={temperatureC}
             />
             <AlertButton
               notifiedCount={nearbyDrivers.length}

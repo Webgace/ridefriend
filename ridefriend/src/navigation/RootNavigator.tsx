@@ -2,8 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {
+  createBottomTabNavigator,
+  BottomTabNavigationOptions,
+} from '@react-navigation/bottom-tabs';
 import { ActivityIndicator, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore, initializeAuthStore } from '@store/authStore';
 import { useMarketStore } from '@store/marketStore';
 import { COLORS, getTheme } from '@constants/theme';
@@ -14,13 +18,24 @@ import OTPVerifyScreen from '@screens/auth/OTPVerifyScreen';
 import OnboardingScreen from '@screens/auth/OnboardingScreen';
 import MarketSelectScreen from '@screens/auth/MarketSelectScreen';
 
-// Main Tab Screens — P6 adiciona toggle Passageiro/Motorista; P7 adiciona Mapa; P10 substitui stubs.
+// Main Tab Screens — Início, Mapa, Rede, Histórico (Perfil acessível via avatar do AppHeader)
 import HomeTabScreen from '@screens/home/HomeTabScreen';
 import MapScreen from '@screens/map/MapScreen';
 import NetworkScreen from '@screens/network/NetworkScreen';
+import HistoryScreen from '@screens/history/HistoryScreen';
 import ProfileScreen from '@screens/profile/ProfileScreen';
 import EmergencyContactScreen from '@screens/profile/EmergencyContactScreen';
 import SettingsScreen from '@screens/settings/SettingsScreen';
+import AdminScreen from '@screens/admin/AdminScreen';
+
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+function tabIcon(base: string): BottomTabNavigationOptions['tabBarIcon'] {
+  return ({ color, size, focused }) => {
+    const name = (focused ? base : `${base}-outline`) as IoniconName;
+    return <Ionicons name={name} size={size} color={color} />;
+  };
+}
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -80,22 +95,22 @@ function MainTabs() {
       <Tab.Screen
         name="Home"
         component={HomeTabScreen}
-        options={{ title: 'Início' }}
+        options={{ title: 'Início', tabBarIcon: tabIcon('home') }}
       />
       <Tab.Screen
         name="Map"
         component={MapScreen}
-        options={{ title: 'Mapa' }}
+        options={{ title: 'Mapa', tabBarIcon: tabIcon('map') }}
       />
       <Tab.Screen
         name="Network"
         component={NetworkScreen}
-        options={{ title: 'Rede' }}
+        options={{ title: 'Rede', tabBarIcon: tabIcon('people') }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ title: 'Perfil' }}
+        name="History"
+        component={HistoryScreen}
+        options={{ title: 'Histórico', tabBarIcon: tabIcon('time') }}
       />
     </Tab.Navigator>
   );
@@ -151,6 +166,11 @@ function MainStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={MainTabs} />
       <Stack.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ headerShown: true, title: 'Perfil' }}
+      />
+      <Stack.Screen
         name="EmergencyContact"
         component={EmergencyContactScreen}
         options={{ headerShown: true, title: 'Contacto de emergência', presentation: 'modal' }}
@@ -159,6 +179,11 @@ function MainStack() {
         name="Settings"
         component={SettingsScreen}
         options={{ headerShown: true, title: 'Definições' }}
+      />
+      <Stack.Screen
+        name="Admin"
+        component={AdminScreen}
+        options={{ headerShown: true, title: 'Painel Admin' }}
       />
     </Stack.Navigator>
   );

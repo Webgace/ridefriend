@@ -26,6 +26,8 @@ export interface User {
   totalRides: number;
   isDriver: boolean;
   isPassenger: boolean;
+  isAdmin: boolean;
+  termsAcceptedAt: string | null;
   marketCode: MarketCode;
   createdAt: string;
   updatedAt: string;

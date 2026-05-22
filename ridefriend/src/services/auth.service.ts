@@ -83,6 +83,8 @@ export async function verifyOTP(phone: string, token: string) {
             totalRides: 0,
             isDriver: false,
             isPassenger: true,
+            isAdmin: false,
+            termsAcceptedAt: null,
             marketCode: marketCode ?? 'ao',
             createdAt: response.session.expires_at?.toString() ?? new Date().toISOString(),
             updatedAt: response.session.expires_at?.toString() ?? new Date().toISOString(),
@@ -131,6 +133,9 @@ export async function createUserProfile(payload: {
   email?: string;
   phone?: string;
   market_code: string;
+  is_driver?: boolean;
+  /** ISO timestamp; obrigatório pelo signup para auditar aceitação T&C / PP. */
+  terms_accepted_at?: string;
 }) {
   const currentUser = await getUser();
 
@@ -148,7 +153,8 @@ export async function createUserProfile(payload: {
         phone: phoneValue,
         name: payload.name,
         email: payload.email ?? null,
-        is_driver: false,
+        is_driver: payload.is_driver ?? false,
+        terms_accepted_at: payload.terms_accepted_at ?? null,
         market_code: payload.market_code,
       },
     ])
@@ -171,6 +177,8 @@ export async function createUserProfile(payload: {
     totalRides: profile.ride_count ?? 0,
     isDriver: profile.is_driver ?? false,
     isPassenger: !(profile.is_driver ?? false),
+    isAdmin: profile.is_admin ?? false,
+    termsAcceptedAt: profile.terms_accepted_at ?? null,
     marketCode: profile.market_code,
     createdAt: profile.created_at,
     updatedAt: profile.updated_at,

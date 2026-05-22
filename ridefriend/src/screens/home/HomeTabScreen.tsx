@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -11,6 +12,11 @@ import Animated, {
 import { MMKV } from 'react-native-mmkv';
 import { COLORS, FONTS } from '@constants/theme';
 import { useT } from '@hooks/useT';
+import { useAuthStore } from '@store/authStore';
+import { useUiHostStore } from '@store/uiHostStore';
+import AppHeader from '@components/ui/AppHeader';
+import InviteFriendSheet from '@components/ui/InviteFriendSheet';
+import BannerCarousel from '@components/home/BannerCarousel';
 import PassengerHomeScreen from '@screens/home/PassengerHomeScreen';
 import DriverHomeScreen from '@screens/home/DriverHomeScreen';
 
@@ -20,10 +26,14 @@ const STORAGE = new MMKV({ id: 'ridefriend-ui' });
 const KEY_LAST_MODE = 'home.last_mode';
 
 export default function HomeTabScreen() {
+  const navigation = useNavigation<any>();
+  const { user } = useAuthStore();
+  const showToast = useUiHostStore((s) => s.showToast);
   const [mode, setMode] = useState<Mode>(() => {
     const stored = STORAGE.getString(KEY_LAST_MODE);
     return stored === 'driver' ? 'driver' : 'passenger';
   });
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     STORAGE.set(KEY_LAST_MODE, mode);
@@ -31,10 +41,20 @@ export default function HomeTabScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <AppHeader
+        userInitial={user?.name?.[0]}
+        userAvatarUrl={user?.avatar ?? null}
+        onBellPress={() => showToast({ message: 'Sem novas notificações.', tone: 'info' })}
+        onQrPress={() => setInviteOpen(true)}
+        onAvatarPress={() => navigation.navigate('Profile')}
+      />
+      <BannerCarousel style={styles.bannerStrip} />
       <ModeToggle mode={mode} onChange={setMode} />
       <View style={styles.body}>
         {mode === 'passenger' ? <PassengerHomeScreen /> : <DriverHomeScreen />}
       </View>
+
+      <InviteFriendSheet visible={inviteOpen} onClose={() => setInviteOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -95,11 +115,12 @@ function ModeToggle({ mode, onChange }: ToggleProps) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.surface },
+  safe: { flex: 1, backgroundColor: COLORS.white },
   toggleWrap: {
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 4,
+    paddingTop: 4,
+    paddingBottom: 12,
+    backgroundColor: COLORS.white,
   },
   toggleTrack: {
     flexDirection: 'row',
@@ -134,4 +155,11 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   body: { flex: 1 },
+  bannerStrip: {
+    backgroundColor: COLORS.white,
+    paddingLeft: 16,
+    paddingTop: 4,
+    paddingBottom: 4,
+    flexGrow: 0,
+  },
 });

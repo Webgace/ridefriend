@@ -1,17 +1,20 @@
-// Ficheiro: src/screens/auth/MarketSelectScreen.tsx | Função: lista de mercados com bandeira (PL2)
+// Ficheiro: src/screens/auth/MarketSelectScreen.tsx | Função: lista de mercados com bandeira (PL2, polido)
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, FONTS } from '@constants/theme';
 import i18n from '@i18n/index';
 import { useMarketStore } from '@store/marketStore';
-import { MarketCode } from '@types/index';
 import { getAllMarkets } from '@config/markets';
+import type { MarketCode } from '../../types';
 
 interface Props {
   onSelect?: (marketCode: MarketCode) => Promise<void>;
 }
 
-const flags: Record<MarketCode, string> = {
+const FLAGS: Record<MarketCode, string> = {
   pt: '🇵🇹',
   br: '🇧🇷',
   ao: '🇦🇴',
@@ -20,7 +23,7 @@ const flags: Record<MarketCode, string> = {
   ng: '🇳🇬',
 };
 
-const commonCities: Record<MarketCode, string> = {
+const CITIES: Record<MarketCode, string> = {
   pt: 'Lisboa',
   br: 'São Paulo',
   ao: 'Luanda',
@@ -36,14 +39,14 @@ function languageForMarket(code: MarketCode) {
 }
 
 export default function MarketSelectScreen({ onSelect }: Props) {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   // Lê directamente do store: este ecrã CORRE quando `config` ainda é null,
   // pelo que não pode usar `useMarket()` (que faz throw nesse caso).
   const setMarket = useMarketStore((s) => s.setMarket);
   const activeCode = useMarketStore((s) => s.config?.code);
 
   const handleSelect = async (marketCode: MarketCode) => {
-    const selected = getAllMarkets().find((market) => market.code === marketCode);
+    const selected = getAllMarkets().find((m) => m.code === marketCode);
     if (!selected) return;
 
     await setMarket(marketCode);
@@ -52,74 +55,144 @@ export default function MarketSelectScreen({ onSelect }: Props) {
     if (onSelect) {
       await onSelect(marketCode);
     } else {
-      navigation.navigate('PhoneInput' as never);
+      navigation.navigate('PhoneInput');
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Escolhe o teu mercado</Text>
-      {getAllMarkets().map((market) => {
-        const active = market.code === activeCode;
-        return (
-          <TouchableOpacity
-            key={market.code}
-            style={[styles.optionCard, active && styles.activeCard]}
-            onPress={() => handleSelect(market.code)}
-          >
-            <View style={styles.optionHeader}>
-              <Text style={styles.flag}>{flags[market.code]}</Text>
-              <Text style={styles.marketLabel}>{market.name}</Text>
-            </View>
-            <Text style={styles.marketMeta}>{commonCities[market.code]} · {market.phonePrefix}</Text>
-            {active && <Text style={styles.activeText}>Activo</Text>}
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.hero}>
+          <View style={styles.heroDecorTop} />
+          <View style={styles.heroDecorBottom} />
+          <View style={styles.heroIconWrap}>
+            <Ionicons name="earth" size={24} color={COLORS.amber} />
+          </View>
+          <Text style={styles.heroTitle}>Onde estás?</Text>
+          <Text style={styles.heroBody}>
+            Escolhe o teu mercado para receberes mapas e contactos locais.
+          </Text>
+        </View>
+
+        <View style={styles.list}>
+          {getAllMarkets().map((market) => {
+            const active = market.code === activeCode;
+            return (
+              <Pressable
+                key={market.code}
+                onPress={() => handleSelect(market.code)}
+                accessibilityRole="button"
+                accessibilityLabel={market.name}
+                style={({ pressed }) => [
+                  styles.card,
+                  active && styles.cardActive,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={styles.flag}>{FLAGS[market.code]}</Text>
+                <View style={styles.cardBody}>
+                  <Text style={styles.cardName}>{market.name}</Text>
+                  <Text style={styles.cardMeta}>
+                    {CITIES[market.code]} · {market.phonePrefix}
+                  </Text>
+                </View>
+                {active ? (
+                  <Ionicons name="checkmark-circle" size={22} color={COLORS.navy} />
+                ) : (
+                  <Ionicons name="chevron-forward" size={18} color={COLORS.text3} />
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safe: { flex: 1, backgroundColor: COLORS.surface },
+  content: { padding: 20, paddingBottom: 32, gap: 18 },
+
+  hero: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 22,
     padding: 20,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 16,
+  heroDecorTop: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(245,158,11,0.12)',
+    top: -50,
+    right: -40,
   },
-  optionCard: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 16,
-    padding: 16,
+  heroDecorBottom: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: 'rgba(245,158,11,0.08)',
+    bottom: -30,
+    right: 30,
+  },
+  heroIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(217,119,6,0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
-    backgroundColor: '#FFFFFF',
   },
-  activeCard: {
-    borderColor: '#2563EB',
-    backgroundColor: '#EFF6FF',
+  heroTitle: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 22,
+    color: COLORS.white,
   },
-  optionHeader: {
+  heroBody: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.78)',
+    marginTop: 6,
+    lineHeight: 19,
+  },
+
+  list: { gap: 10 },
+  card: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    gap: 14,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  flag: {
-    fontSize: 24,
-    marginRight: 12,
+  cardActive: {
+    borderColor: COLORS.navy,
+    backgroundColor: '#F1F5FB',
+    borderWidth: 1.5,
   },
-  marketLabel: {
-    fontSize: 18,
-    fontWeight: '600',
+  flag: { fontSize: 28 },
+  cardBody: { flex: 1, gap: 2 },
+  cardName: {
+    fontFamily: FONTS.soraBold,
+    fontSize: 15,
+    color: COLORS.text,
   },
-  marketMeta: {
-    color: '#6B7280',
-    marginBottom: 8,
+  cardMeta: {
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    color: COLORS.text2,
   },
-  activeText: {
-    color: '#2563EB',
-    fontWeight: '600',
-  },
+
+  pressed: { opacity: 0.85 },
 });

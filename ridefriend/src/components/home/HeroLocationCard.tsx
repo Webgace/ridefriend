@@ -3,6 +3,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, FONTS } from '@constants/theme';
 import { useT } from '@hooks/useT';
 
@@ -10,6 +11,7 @@ interface Props {
   stopName: string | null;
   waitingFor?: string;
   nearbyCount: number;
+  temperatureC?: number | null;
   style?: ViewStyle;
 }
 
@@ -17,6 +19,7 @@ export default function HeroLocationCard({
   stopName,
   waitingFor,
   nearbyCount,
+  temperatureC,
   style,
 }: Props) {
   const { t } = useT('ride');
@@ -35,21 +38,32 @@ export default function HeroLocationCard({
 
         <Text style={styles.label}>{`${tCommon('current_stop_pin')} ${t('current_stop')}`}</Text>
 
-        <Text style={styles.stopName} numberOfLines={2}>
-          {stopName ?? t('detecting_location')}
-        </Text>
+        <View style={styles.stopRow}>
+          <MaterialCommunityIcons name="bus" size={22} color={COLORS.amber} />
+          <Text style={styles.stopName} numberOfLines={2}>
+            {stopName ?? t('detecting_location')}
+          </Text>
+        </View>
 
         <View style={styles.pillsRow}>
           {waitingFor ? (
-            <View style={[styles.pill, { backgroundColor: 'rgba(217,119,6,0.25)' }]}>
+            <View style={[styles.pill, styles.pillAmber]}>
+              <MaterialCommunityIcons name="clock-outline" size={12} color={COLORS.white} />
               <Text style={styles.pillText}>{t('waiting_since', { time: waitingFor })}</Text>
             </View>
           ) : null}
-          <View style={[styles.pill, { backgroundColor: 'rgba(16,185,129,0.25)' }]}>
+          <View style={[styles.pill, styles.pillGreen]}>
+            <MaterialCommunityIcons name="account-group-outline" size={12} color={COLORS.white} />
             <Text style={styles.pillText}>
               {t(nearbyCount === 1 ? 'nearby_count_one' : 'nearby_count', { count: nearbyCount })}
             </Text>
           </View>
+          {typeof temperatureC === 'number' ? (
+            <View style={[styles.pill, styles.pillNeutral]}>
+              <MaterialCommunityIcons name="thermometer" size={12} color={COLORS.white} />
+              <Text style={styles.pillText}>{`${Math.round(temperatureC)}°C`}</Text>
+            </View>
+          ) : null}
         </View>
       </LinearGradient>
     </View>
@@ -91,11 +105,17 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: 8,
   },
+  stopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
   stopName: {
+    flex: 1,
     fontFamily: FONTS.soraBold,
     fontSize: 19,
     color: COLORS.white,
-    marginBottom: 14,
   },
   pillsRow: {
     flexDirection: 'row',
@@ -103,10 +123,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   pill: {
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
   },
+  pillAmber: { backgroundColor: 'rgba(217,119,6,0.25)' },
+  pillGreen: { backgroundColor: 'rgba(16,185,129,0.25)' },
+  pillNeutral: { backgroundColor: 'rgba(255,255,255,0.18)' },
   pillText: {
     color: COLORS.white,
     fontFamily: FONTS.bodySemi,

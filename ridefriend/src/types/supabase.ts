@@ -17,6 +17,8 @@ export type Database = {
           photo_url: string | null;
           home_area: string | null;
           is_driver: boolean;
+          is_admin: boolean;
+          terms_accepted_at: string | null;
           rating_avg: number;
           ride_count: number;
           expo_push_token: string | null;
@@ -32,6 +34,8 @@ export type Database = {
           photo_url?: string | null;
           home_area?: string | null;
           is_driver?: boolean;
+          is_admin?: boolean;
+          terms_accepted_at?: string | null;
           rating_avg?: number;
           ride_count?: number;
           expo_push_token?: string | null;
@@ -44,6 +48,8 @@ export type Database = {
           photo_url?: string | null;
           home_area?: string | null;
           is_driver?: boolean;
+          is_admin?: boolean;
+          terms_accepted_at?: string | null;
           rating_avg?: number;
           ride_count?: number;
           expo_push_token?: string | null;
@@ -55,18 +61,26 @@ export type Database = {
         Row: {
           id: string;
           user_id: string;
-          contact_user_id: string;
+          contact_user_id: string | null;
           group_type: ContactGroup;
+          alias_name: string | null;
+          alias_phone: string | null;
+          phone_normalized: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
-          contact_user_id: string;
+          contact_user_id?: string | null;
           group_type?: ContactGroup;
+          alias_name?: string | null;
+          alias_phone?: string | null;
         };
         Update: {
+          contact_user_id?: string | null;
           group_type?: ContactGroup;
+          alias_name?: string | null;
+          alias_phone?: string | null;
         };
       };
 
@@ -233,6 +247,69 @@ export type Database = {
           is_major?: boolean;
         };
         Update: never;
+      };
+
+      app_config: {
+        Row: {
+          key: string;
+          value: string | null;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          key: string;
+          value?: string | null;
+          updated_by?: string | null;
+        };
+        Update: {
+          value?: string | null;
+          updated_by?: string | null;
+        };
+      };
+
+      banners: {
+        Row: {
+          id: string;
+          title: string;
+          body: string | null;
+          image_url: string | null;
+          cta_label: string | null;
+          cta_url: string | null;
+          market_code: string | null;
+          starts_at: string | null;
+          ends_at: string | null;
+          priority: number;
+          is_active: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          body?: string | null;
+          image_url?: string | null;
+          cta_label?: string | null;
+          cta_url?: string | null;
+          market_code?: string | null;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          priority?: number;
+          is_active?: boolean;
+          created_by?: string | null;
+        };
+        Update: {
+          title?: string;
+          body?: string | null;
+          image_url?: string | null;
+          cta_label?: string | null;
+          cta_url?: string | null;
+          market_code?: string | null;
+          starts_at?: string | null;
+          ends_at?: string | null;
+          priority?: number;
+          is_active?: boolean;
+        };
       };
     };
     Views: Record<string, never>;

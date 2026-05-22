@@ -276,11 +276,10 @@ function MapCanvas({
   useEffect(() => {
     if (recenterRequest === 0) return;
     if (!cameraRef.current) return;
-    cameraRef.current.setCamera?.({
-      centerCoordinate: [centerLng, centerLat],
-      zoomLevel: INITIAL_ZOOM,
-      animationMode: 'flyTo',
-      animationDuration: 600,
+    cameraRef.current.flyTo?.({
+      center: [centerLng, centerLat],
+      zoom: INITIAL_ZOOM,
+      duration: 600,
     });
   }, [recenterRequest, centerLng, centerLat]);
 
@@ -289,61 +288,58 @@ function MapCanvas({
     [myLocation, radiusM],
   );
 
-  const { MapView, Camera, ShapeSource, LineLayer, MarkerView } = MapLibre;
+  const { Map, Camera, GeoJSONSource, Layer, Marker } = MapLibre;
 
   return (
-    <MapView
+    <Map
       style={StyleSheet.absoluteFill}
       mapStyle={OSM_RASTER_STYLE}
-      logoEnabled={false}
-      attributionEnabled
-      pitchEnabled={false}
-      rotateEnabled={false}
-      compassEnabled={false}
+      logo={false}
+      attribution
+      touchPitch={false}
+      touchRotate={false}
+      compass={false}
     >
       <Camera
         ref={cameraRef}
-        centerCoordinate={[centerLng, centerLat]}
-        zoomLevel={zoom}
-        animationMode="easeTo"
-        animationDuration={300}
+        center={[centerLng, centerLat]}
+        zoom={zoom}
+        easing="ease"
+        duration={300}
       />
 
       {radiusFeature ? (
-        <ShapeSource id="detectionRadius" shape={radiusFeature}>
-          <LineLayer
+        <GeoJSONSource id="detectionRadius" data={radiusFeature}>
+          <Layer
             id="detectionRadiusLine"
-            style={{
-              lineColor: COLORS.navy,
-              lineOpacity: 0.45,
-              lineWidth: 1.5,
-              lineDasharray: [3, 3],
+            type="line"
+            paint={{
+              'line-color': COLORS.navy,
+              'line-opacity': 0.45,
+              'line-width': 1.5,
+              'line-dasharray': [3, 3],
             }}
           />
-        </ShapeSource>
+        </GeoJSONSource>
       ) : null}
 
       {myLocation ? (
-        <MarkerView id="me" coordinate={[myLocation.lng, myLocation.lat]} anchor={{ x: 0.5, y: 0.5 }}>
+        <Marker id="me" lngLat={[myLocation.lng, myLocation.lat]} anchor="center">
           <View style={styles.selfMarker} />
-        </MarkerView>
+        </Marker>
       ) : null}
 
       {drivers.map((d) => (
-        <MarkerView
+        <Marker
           key={d.id}
           id={d.id}
-          coordinate={[d.location.longitude, d.location.latitude]}
-          anchor={{ x: 0.5, y: 0.5 }}
+          lngLat={[d.location.longitude, d.location.latitude]}
+          anchor="center"
         >
           <View style={styles.driverMarker} />
-        </MarkerView>
+        </Marker>
       ))}
-
-      {!myLocation ? (
-        <Camera centerCoordinate={[region.longitude, region.latitude]} zoomLevel={INITIAL_ZOOM} />
-      ) : null}
-    </MapView>
+    </Map>
   );
 }
 

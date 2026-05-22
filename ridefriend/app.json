@@ -22,7 +22,8 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "RideFriend needs access to your location to show nearby drivers and passengers.",
         "NSCameraUsageDescription": "RideFriend needs camera access for profile pictures and vehicle photos.",
         "NSPhotoLibraryUsageDescription": "RideFriend needs access to your photo library to upload images.",
-        "NSPhotoLibraryAddUsageDescription": "RideFriend needs access to save photos to your photo library."
+        "NSPhotoLibraryAddUsageDescription": "RideFriend needs access to save photos to your photo library.",
+        "NSContactsUsageDescription": "RideFriend uses your contacts to suggest which of your friends are already on the app, so you can quickly add them to your trusted network."
       },
       "bundleIdentifier": "com.friendride.app",
       "scheme": "ridefriend"
@@ -39,7 +40,8 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CONTACTS"
       ],
       "package": "com.friendride.app",
       "intentFilters": [
@@ -86,9 +88,16 @@
           "cameraPermission": "Allow RideFriend to access your camera."
         }
       ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "RideFriend uses your contacts to suggest which of your friends are already on the app, so you can quickly add them to your trusted network."
+        }
+      ],
       "expo-font",
       "expo-localization",
-      "expo-secure-store"
+      "expo-secure-store",
+      "@maplibre/maplibre-react-native"
     ]
   }
 }

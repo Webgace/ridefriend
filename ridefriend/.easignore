@@ -1,0 +1,25 @@
+# EAS Build ignore — files in this dir that should NOT be uploaded to EAS.
+# Syntax = .gitignore. Applies on top of .gitignore (still respects it).
+# Reminder: ProjectDocs/ lives at the REPO root (one level above this file)
+# and is already outside the EAS upload scope by structure — no entry needed.
+
+# Database scripts — kept in repo for reference; never shipped to clients.
+*.sql
+
+# Backup / scratch files.
+*.bak
+App.full.tsx.bak
+
+# Local dev logs (rarely committed but defensive).
+*.log
+
+# Local test fixtures / coverage.
+coverage/
+
+# Local docs that don't need to be in the build context.
+docs/
+
+# Native dirs are .gitignored already (per 7f110a8 commit) but list here too
+# so a `eas build --local` from a fresh checkout never copies them.
+android/
+ios/

@@ -29,6 +29,9 @@ export interface User {
   isAdmin: boolean;
   termsAcceptedAt: string | null;
   marketCode: MarketCode;
+  /** Como o utilizador entrou pela primeira vez. Usado pelo Onboarding para passar
+   * o valor correcto ao createUserProfile. Opcional para retro-compat com perfis antigos. */
+  authProvider?: 'phone' | 'google' | 'apple' | 'email';
   createdAt: string;
   updatedAt: string;
 }

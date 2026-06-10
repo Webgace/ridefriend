@@ -92,37 +92,35 @@ export default function AlertButton({ notifiedCount, onPress, disabled, style }:
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    position: 'relative',
-    alignItems: 'stretch',
-    justifyContent: 'center',
-  },
-  ring: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 20,
-    backgroundColor: COLORS.amber,
-  },
   btn: {
-    borderRadius: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
     alignItems: 'center',
+    borderRadius: 20,
+    elevation: 6,
     justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     shadowColor: '#F59E0B',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 18,
-    elevation: 6,
   },
   btnDefault: {
     backgroundColor: COLORS.amber,
   },
   btnSent: {
     backgroundColor: COLORS.green,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+  ring: {
+    backgroundColor: COLORS.amber,
+    borderRadius: 20,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
   },
   text: {
     fontFamily: FONTS.soraBold,
@@ -134,7 +132,9 @@ const styles = StyleSheet.create({
   textSent: {
     color: COLORS.white,
   },
-  pressed: {
-    opacity: 0.85,
+  wrap: {
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    position: 'relative',
   },
 });

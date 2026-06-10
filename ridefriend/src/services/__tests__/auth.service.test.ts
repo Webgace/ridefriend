@@ -77,7 +77,8 @@ describe('sendOTP', () => {
   it('delega para supabase.signInWithPhone quando há mercado seleccionado', async () => {
     mockedSignInWithPhone.mockResolvedValueOnce(undefined);
     await sendOTP('+244923000001');
-    expect(mockedSignInWithPhone).toHaveBeenCalledWith('+244923000001');
+    // sendOTP resolve o canal via app_config (default 'sms') e passa-o ao provider.
+    expect(mockedSignInWithPhone).toHaveBeenCalledWith('+244923000001', 'sms');
   });
 
   it('lança mensagem pt-AO se o provider falhar', async () => {

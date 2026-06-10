@@ -14,7 +14,6 @@ import { COLORS, getTheme } from '@constants/theme';
 
 // Auth Stack Screens
 import PhoneInputScreen from '@screens/auth/PhoneInputScreen';
-import OTPVerifyScreen from '@screens/auth/OTPVerifyScreen';
 import OnboardingScreen from '@screens/auth/OnboardingScreen';
 import MarketSelectScreen from '@screens/auth/MarketSelectScreen';
 
@@ -41,8 +40,9 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 /**
- * Auth Stack Navigator
- * Includes: Market Selection, Phone Input, OTP, Onboarding
+ * Auth Stack Navigator — utilizador NÃO autenticado.
+ * Inclui: Market Selection, Phone Input (login social).
+ * Onboarding fica fora porque só é alcançável já autenticado, via OnboardingStack.
  */
 function AuthStack() {
   return (
@@ -61,14 +61,20 @@ function AuthStack() {
         name="PhoneInput"
         component={PhoneInputScreen}
       />
-      <Stack.Screen
-        name="OTPVerify"
-        component={OTPVerifyScreen}
-      />
-      <Stack.Screen
-        name="Onboarding"
-        component={OnboardingScreen}
-      />
+    </Stack.Navigator>
+  );
+}
+
+/**
+ * OnboardingStack — utilizador autenticado mas sem perfil completo em public.users.
+ * Único caminho possível: completar o Onboarding. Sem isto, o RootNavigator
+ * deixava o utilizador autenticado cair directo no MainStack sem perfil (bug
+ * histórico que afectou o primeiro signup Google do admin).
+ */
+function OnboardingStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
     </Stack.Navigator>
   );
 }
@@ -121,7 +127,7 @@ function MainTabs() {
  * Main entry point for navigation structure
  */
 export function RootNavigator() {
-  const { isLoading, isAuthenticated } = useAuthStore();
+  const { isLoading, isAuthenticated, user } = useAuthStore();
   const { isLoaded: marketLoaded, config } = useMarketStore();
   const [appIsReady, setAppIsReady] = useState(false);
 
@@ -151,11 +157,21 @@ export function RootNavigator() {
     );
   }
 
-  return (
-    <NavigationContainer>
-      {isAuthenticated && config ? <MainStack /> : <AuthStack />}
-    </NavigationContainer>
-  );
+  // Triagem em 3 estados:
+  //  - Não autenticado → AuthStack (login)
+  //  - Autenticado mas sem perfil completo (terms_accepted_at null) → OnboardingStack
+  //  - Autenticado com perfil → MainStack (app normal)
+  // Uso `termsAcceptedAt` como prova de perfil porque createUserProfile só corre
+  // depois de o utilizador aceitar T&C — antes disso a linha em public.users não existe.
+  let inner: React.ReactNode;
+  if (!isAuthenticated || !config) {
+    inner = <AuthStack />;
+  } else if (!user?.termsAcceptedAt) {
+    inner = <OnboardingStack />;
+  } else {
+    inner = <MainStack />;
+  }
+  return <NavigationContainer>{inner}</NavigationContainer>;
 }
 
 /**

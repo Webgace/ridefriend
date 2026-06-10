@@ -58,28 +58,28 @@ export default function ToastHost() {
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 95,
-    alignItems: 'center',
-    zIndex: 100,
-  },
-  toast: {
-    paddingVertical: 11,
-    paddingHorizontal: 18,
-    borderRadius: 30,
-    shadowColor: COLORS.navy,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 24,
-    elevation: 8,
-    maxWidth: '85%',
-  },
   text: {
     color: COLORS.white,
     fontFamily: FONTS.bodySemi,
     fontSize: 13,
+  },
+  toast: {
+    borderRadius: 30,
+    elevation: 8,
+    maxWidth: '85%',
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+    shadowColor: COLORS.navy,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
+  },
+  wrap: {
+    alignItems: 'center',
+    bottom: 95,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    zIndex: 100,
   },
 });

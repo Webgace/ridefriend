@@ -115,51 +115,51 @@ function ModeToggle({ mode, onChange }: ToggleProps) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.white },
-  toggleWrap: {
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 12,
+  bannerStrip: {
     backgroundColor: COLORS.white,
+    flexGrow: 0,
+    paddingBottom: 4,
+    paddingLeft: 16,
+    paddingTop: 4,
   },
-  toggleTrack: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.gray100,
-    borderRadius: 999,
-    padding: 4,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  toggleIndicator: {
-    position: 'absolute',
-    top: 4,
-    bottom: 4,
-    left: 4,
-    width: '50%',
-    backgroundColor: COLORS.navy,
-    borderRadius: 999,
-  },
+  body: { flex: 1 },
+  safe: { backgroundColor: COLORS.white, flex: 1 },
   toggleHalf: {
-    flex: 1,
-    paddingVertical: 10,
     alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
+    paddingVertical: 10,
     zIndex: 1,
   },
+  toggleIndicator: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 999,
+    bottom: 4,
+    left: 4,
+    position: 'absolute',
+    top: 4,
+    width: '50%',
+  },
   toggleText: {
+    color: COLORS.text2,
     fontFamily: FONTS.bodySemi,
     fontSize: 13,
-    color: COLORS.text2,
   },
   toggleTextActive: {
     color: COLORS.white,
   },
-  body: { flex: 1 },
-  bannerStrip: {
+  toggleTrack: {
+    backgroundColor: COLORS.gray100,
+    borderRadius: 999,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    padding: 4,
+    position: 'relative',
+  },
+  toggleWrap: {
     backgroundColor: COLORS.white,
-    paddingLeft: 16,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
     paddingTop: 4,
-    paddingBottom: 4,
-    flexGrow: 0,
   },
 });

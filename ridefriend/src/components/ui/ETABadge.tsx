@@ -65,9 +65,9 @@ export default function ETABadge({ minutes, style }: Props) {
 const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
+    borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 20,
   },
   text: {
     fontFamily: FONTS.bodySemi,

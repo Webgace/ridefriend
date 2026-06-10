@@ -17,6 +17,7 @@
     ],
     "ios": {
       "supportsTabletMode": true,
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "RideFriend needs access to your location to show nearby drivers and passengers.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "RideFriend needs access to your location to show nearby drivers and passengers.",
@@ -65,7 +66,10 @@
       "apiBaseUrl": "http://72.61.45.31/ridefriend",
       "eas": {
         "projectId": "1f47c628-5760-4a75-9abf-ccdc9fd9ab48"
-      }
+      },
+      "googleIosClientId": "1027420415056-o7pglmie6v04nmf18p5b802nsjau36tf.apps.googleusercontent.com",
+      "googleAndroidClientId": "1027420415056-08gdkrher0svvdpj7o0urihuh13j194g.apps.googleusercontent.com",
+      "googleWebClientId": "1027420415056-afhi86rfck1bsmert1uokrftnf5vj509.apps.googleusercontent.com"
     },
     "plugins": [
       [
@@ -97,7 +101,15 @@
       "expo-font",
       "expo-localization",
       "expo-secure-store",
-      "@maplibre/maplibre-react-native"
+      "expo-apple-authentication",
+      "expo-web-browser",
+      "@maplibre/maplibre-react-native",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.1027420415056-o7pglmie6v04nmf18p5b802nsjau36tf"
+        }
+      ]
     ]
   }
 }

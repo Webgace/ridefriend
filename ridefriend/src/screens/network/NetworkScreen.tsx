@@ -26,6 +26,7 @@ import AddContactSheet from '@components/network/AddContactSheet';
 import EditContactSheet from '@components/network/EditContactSheet';
 import ContactActionsSheet from '@components/network/ContactActionsSheet';
 import { ContactGroup } from '@types/index';
+import { getInviteUrl } from '@utils/invite';
 
 const GROUP_ORDER: ContactGroup[] = ['family', 'friend', 'colleague', 'neighbour'];
 const GROUP_LABEL: Record<ContactGroup, string> = {
@@ -55,9 +56,7 @@ export default function NetworkScreen() {
   const [sosOpen, setSosOpen] = useState(false);
 
   const activeCount = contacts.filter((c) => c.status !== 'offline').length;
-  const inviteUrl = user?.id
-    ? `https://ridefriend.app/invite/${user.id}`
-    : 'https://ridefriend.app';
+  const inviteUrl = getInviteUrl(user?.id);
 
   const handleInvite = useCallback(
     async (c: ContactRow) => {
@@ -322,122 +321,122 @@ function ActionButton({ onPress, accessibilityLabel, children, tint, dim }: Acti
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.surface },
-  scroll: { padding: 16, paddingBottom: 120, gap: 4 },
-
-  hero: {
-    flexDirection: 'row',
+  actionBtn: {
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: COLORS.navy,
-    borderRadius: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    marginBottom: 12,
-  },
-  heroIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(217,119,6,0.18)',
-    alignItems: 'center',
+    backgroundColor: COLORS.gray100,
+    borderRadius: 16,
+    height: 32,
     justifyContent: 'center',
+    width: 32,
   },
-  heroBody: { flex: 1, gap: 2 },
-  heroTitle: { fontFamily: FONTS.soraBold, fontSize: 18, color: COLORS.white },
-  heroSub: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.75)',
-  },
+  actionBtnAmber: { backgroundColor: COLORS.amber },
+
+  actionBtnDim: { opacity: 0.55 },
+  actions: { alignItems: 'center', flexDirection: 'row', gap: 6 },
   addBtn: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
     backgroundColor: COLORS.amber,
+    borderRadius: 999,
+    flexDirection: 'row',
+    gap: 5,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 999,
   },
   addBtnText: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 12,
     color: COLORS.white,
-  },
-
-  section: { gap: 8, marginBottom: 12 },
-  sectionTitle: {
     fontFamily: FONTS.soraBold,
     fontSize: 12,
-    color: COLORS.text2,
-    letterSpacing: 0.08 * 12,
-    paddingHorizontal: 4,
-  },
-  rowList: { gap: 8 },
-
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 16,
-  },
-  rowBody: { flex: 1, gap: 4 },
-  rowNameLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  rowName: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 14,
-    color: COLORS.text,
-    flexShrink: 1,
   },
   badgeJoined: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
     backgroundColor: '#D1FAE5',
+    borderRadius: 999,
+    flexDirection: 'row',
+    gap: 3,
     paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 999,
   },
   badgeJoinedText: {
+    color: '#047857',
     fontFamily: FONTS.bodySemi,
     fontSize: 10,
-    color: '#047857',
   },
   badgePhantom: {
     backgroundColor: COLORS.gray100,
+    borderRadius: 999,
     paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 999,
   },
+
   badgePhantomText: {
+    color: COLORS.text2,
     fontFamily: FONTS.bodySemi,
     fontSize: 10,
-    color: COLORS.text2,
   },
-  rowMeta: {
+  empty: { alignItems: 'center', gap: 4, paddingVertical: 32 },
+  emptyBody: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 13 },
+
+  emptyTitle: { color: COLORS.text, fontFamily: FONTS.soraBold, fontSize: 15 },
+  hero: {
+    alignItems: 'center',
+    backgroundColor: COLORS.navy,
+    borderRadius: 20,
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  heroBody: { flex: 1, gap: 2 },
+  heroIconWrap: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(217,119,6,0.18)',
+    borderRadius: 12,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  heroSub: {
+    color: 'rgba(255,255,255,0.75)',
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.text2,
   },
-
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  actionBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionBtnAmber: { backgroundColor: COLORS.amber },
-  actionBtnDim: { opacity: 0.55 },
-
-  empty: { paddingVertical: 32, alignItems: 'center', gap: 4 },
-  emptyTitle: { fontFamily: FONTS.soraBold, fontSize: 15, color: COLORS.text },
-  emptyBody: { fontFamily: FONTS.bodyRegular, fontSize: 13, color: COLORS.text2 },
-
+  heroTitle: { color: COLORS.white, fontFamily: FONTS.soraBold, fontSize: 18 },
   pressed: { opacity: 0.85 },
+  row: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  rowBody: { flex: 1, gap: 4 },
+
+  rowList: { gap: 8 },
+  rowMeta: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+  },
+  rowName: {
+    color: COLORS.text,
+    flexShrink: 1,
+    fontFamily: FONTS.soraBold,
+    fontSize: 14,
+  },
+  rowNameLine: { alignItems: 'center', flexDirection: 'row', gap: 6 },
+
+  safe: { backgroundColor: COLORS.surface, flex: 1 },
+  scroll: { gap: 4, padding: 16, paddingBottom: 120 },
+  section: { gap: 8, marginBottom: 12 },
+
+  sectionTitle: {
+    color: COLORS.text2,
+    fontFamily: FONTS.soraBold,
+    fontSize: 12,
+    letterSpacing: 0.08 * 12,
+    paddingHorizontal: 4,
+  },
 });

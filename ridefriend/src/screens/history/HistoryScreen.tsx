@@ -95,50 +95,50 @@ export default function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.white },
-  filtersWrap: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 12,
-    backgroundColor: COLORS.white,
+  empty: {
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 48,
   },
+  emptyBody: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13,
+    paddingHorizontal: 32,
+    textAlign: 'center',
+  },
+  emptyTitle: { color: COLORS.text, fontFamily: FONTS.soraBold, fontSize: 15 },
   filterPill: {
+    backgroundColor: COLORS.gray100,
+    borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: COLORS.gray100,
   },
   filterPillActive: {
     backgroundColor: COLORS.navy,
   },
   filterText: {
+    color: COLORS.text2,
     fontFamily: FONTS.bodySemi,
     fontSize: 12,
-    color: COLORS.text2,
   },
   filterTextActive: {
     color: COLORS.white,
   },
+  filtersWrap: {
+    backgroundColor: COLORS.white,
+    flexDirection: 'row',
+    gap: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    paddingTop: 4,
+  },
   listContent: {
-    padding: 16,
-    paddingBottom: 100,
     backgroundColor: COLORS.surface,
     flexGrow: 1,
+    padding: 16,
+    paddingBottom: 100,
   },
+  safe: { backgroundColor: COLORS.white, flex: 1 },
   sep: { height: 10 },
-  empty: {
-    paddingVertical: 48,
-    alignItems: 'center',
-    gap: 6,
-  },
-  emptyTitle: { fontFamily: FONTS.soraBold, fontSize: 15, color: COLORS.text },
-  emptyBody: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 13,
-    color: COLORS.text2,
-    textAlign: 'center',
-    paddingHorizontal: 32,
-  },
 });

@@ -7,13 +7,19 @@ import {
   startTracking,
   stopTracking,
 } from '@services/location.service';
-import { getNearestStop } from '@services/geocoding.service';
+import { getNearestStop, reverseGeocode } from '@services/geocoding.service';
 import { useAuthStore } from '@store/authStore';
 import { BusStop, PermissionStatus } from '@types/index';
 
 interface UseLocationState {
   myLocation: { lat: number; lng: number; accuracy?: number } | null;
   nearestStop: BusStop | null;
+  /**
+   * Nome a mostrar no cartão de paragem: usa o bus_stop se houver, senão
+   * cai para o reverse-geocode (rua / bairro). Null só enquanto o GPS
+   * ainda não devolveu coordenadas.
+   */
+  locationLabel: string | null;
   isTracking: boolean;
   permissionStatus: PermissionStatus;
   isLoading: boolean;
@@ -25,6 +31,7 @@ export function useLocation() {
   const [state, setState] = useState<UseLocationState>({
     myLocation: null,
     nearestStop: null,
+    locationLabel: null,
     isTracking: false,
     permissionStatus: { location: 'undetermined' },
     isLoading: true,
@@ -44,7 +51,14 @@ export function useLocation() {
 
   const refreshNearestStop = useCallback(async (lat: number, lng: number) => {
     const stop = await getNearestStop(lat, lng);
-    setState((prev) => ({ ...prev, nearestStop: stop }));
+    if (stop?.name) {
+      setState((prev) => ({ ...prev, nearestStop: stop, locationLabel: stop.name }));
+      return;
+    }
+    // Sem paragem registada por perto — usa reverse-geocode como fallback.
+    const geo = await reverseGeocode(lat, lng).catch(() => null);
+    const fallback = geo?.shortName?.trim() || geo?.displayName?.trim() || null;
+    setState((prev) => ({ ...prev, nearestStop: stop, locationLabel: fallback }));
   }, []);
 
   const onTick = useCallback(

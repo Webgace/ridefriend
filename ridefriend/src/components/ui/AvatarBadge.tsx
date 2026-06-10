@@ -73,21 +73,21 @@ export default function AvatarBadge({
 }
 
 const styles = StyleSheet.create({
-  wrap: {
-    position: 'relative',
-  },
   avatar: {
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   initial: {
     fontFamily: FONTS.soraBold,
   },
   statusDot: {
+    borderColor: COLORS.white,
+    borderWidth: 2,
+    bottom: 0,
     position: 'absolute',
     right: 0,
-    bottom: 0,
-    borderWidth: 2,
-    borderColor: COLORS.white,
+  },
+  wrap: {
+    position: 'relative',
   },
 });

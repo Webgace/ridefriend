@@ -56,60 +56,60 @@ export default function PassengerAtStopCard({ passenger }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.white,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 12,
-  },
   body: {
     flex: 1,
     gap: 2,
   },
-  headerRow: {
-    flexDirection: 'row',
+  card: {
     alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 10,
+    padding: 12,
+  },
+  headerRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: 6,
   },
+  iconBtn: {
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderRadius: 15,
+    borderWidth: 1,
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  iconBtnText: {
+    color: COLORS.text,
+    fontSize: 14,
+  },
+  meta: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+  },
   name: {
+    color: COLORS.text,
     flexShrink: 1,
     fontFamily: FONTS.bodySemi,
     fontSize: 14,
-    color: COLORS.text,
+  },
+  pressed: {
+    opacity: 0.85,
   },
   tag: {
+    borderRadius: 20,
     paddingHorizontal: 7,
     paddingVertical: 1,
-    borderRadius: 20,
   },
   tagText: {
     fontFamily: FONTS.bodySemi,
     fontSize: 10,
-  },
-  meta: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.text2,
-  },
-  iconBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    backgroundColor: COLORS.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconBtnText: {
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  pressed: {
-    opacity: 0.85,
   },
 });

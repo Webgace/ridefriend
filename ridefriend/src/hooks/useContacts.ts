@@ -6,7 +6,7 @@ import { useAuthStore } from '@store/authStore';
 import { useMarketStore } from '@store/marketStore';
 import { haversineDistance } from '@utils/geo';
 import { toE164 } from '@utils/phone';
-import type { ContactGroup } from '../types';
+import type { ContactGroup } from '@types/index';
 
 export interface ContactRow {
   id: string;                  // contacts.id

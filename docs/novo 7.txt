@@ -1,0 +1,178 @@
+Build #2 OK ✅
+
+📱 APK: https://expo.dev/artifacts/eas/x28vCxem7NJeVBzKYWgxgQ.apk
+
+Passos no Huawei
+Desinstala primeiro o APK actual (Definições → Apps → RideFriend → Desinstalar). Necessário porque mudámos plugins nativos.
+Abre o link do APK no browser do telefone → Download → Instalar (aceitar "fontes desconhecidas").
+Abre a app → "Continuar com Google".
+Desta vez deve aparecer a picker nativa do Android (popup do sistema com lista de contas Google), não redirect para browser.
+Escolhe acalongo@gmail.com → completa Onboarding (nome, mercado, aceitar T&C).
+Vai a Perfil → deve aparecer "Painel admin".
+Diagnóstico se algo falhar
+"PLAY_SERVICES_NOT_AVAILABLE" — Huawei sem Play Services (problema conhecido em modelos pós-2019). Confirma em Definições → Apps. Se for esse o caso, Google Sign-In nativo simplesmente não funciona em Huawei sem Play Services — terás de testar noutro Android (Samsung/Pixel) ou usar emulador.
+"DEVELOPER_ERROR" (code 10) — algo na config Android (SHA-1 ou webClientId). Diz-me a mensagem exacta.
+App fecha — abre via adb logcat ou diz-me que faço o triage por logs do Supabase.
+Diz-me como corre.
+
+successful loggeg with Google account. does still possible to get access code with Whatsapp number?
+Boa — Google + auto-admin a funcionar. ✅
+
+Update Todos
+
+Add @react-native-google-signin/google-signin to package.json + app.json plugin
+
+Rewrite SocialAuthButtons Google handler to use native SDK
+
+npm install + new EAS Android preview build
+
+Smoke test Google sign-in on device
+
+Configure Twilio Verify in Supabase for WhatsApp OTP
+
+Apple setup + iOS build
+Sim, ainda é possível — o código já está preparado, falta só a integração no Supabase. Nenhuma alteração de código nem rebuild EAS necessária para activar. São 3 passos:
+
+1. Twilio account + Verify Service
+https://www.twilio.com/console (cria conta se não tens)
+
+Verás "Account SID" e "Auth Token" na home → anota os dois.
+Vai a Develop → Verify → Services → Create new Service → nome RideFriend → Create.
+Anota o Service SID (formato VA…).
+2. Activar WhatsApp no Verify Service
+Dentro do serviço criado:
+
+Channels → WhatsApp → toggle "Enable".
+Senders: precisas de um número WhatsApp Business aprovado pela Meta. Duas opções:
+Sandbox Twilio (gratuito, para testar) — número +1 415 523 8886. Cada utilizador tem de enviar join <palavra> antes da primeira mensagem. Bom só para o teu próprio teste.
+Produção — pedir aprovação à Meta de um número WhatsApp Business teu (~1-2 semanas; precisa de website + verificação de negócio).
+Para testar agora, sandbox chega.
+
+3. Ligar Twilio Verify ao Supabase
+https://supabase.com/dashboard/project/oshwrofpievzgjohrqxt/auth/providers → Phone (não é "Google" desta vez):
+
+"Enable Sign in with phone": ON
+SMS provider: Twilio Verify (não "Twilio" simples)
+Twilio Account SID: do passo 1
+Twilio Auth Token: do passo 1
+Twilio Verify Service SID: do passo 1 (VA…)
+Save
+4. Trocar o canal na app (admin)
+Na app: Perfil → Painel Admin → Canal de OTP → seleccionar "WhatsApp". Save automático.
+
+A partir desse momento:
+
+A PhoneInputScreen mostra "Recebes um código por WhatsApp..."
+O botão diz "Enviar código por WhatsApp"
+O Supabase envia via Twilio Verify usando o canal WhatsApp.
+⚠ Importante — fallback
+Se quiseres manter SMS como fallback (caso Twilio Verify recuse WhatsApp por número não verificado), no Twilio Console → Verify Service → "Allowed channels", deixa ambos SMS + WhatsApp activos. Se WhatsApp falhar, Twilio Verify tenta SMS automaticamente.
+
+Se preferires deixar Twilio para depois e avançar para Apple/iOS agora, diz-me que faço o setup Apple.
+
+with twillio whatsapp confuguration will I be charged ?  I be
+Sim, mas só em produção. Sandbox é gratuito para testar.
+
+Resumo de custos
+Sandbox Twilio (para testar AGORA)
+$0 — uso ilimitado para números que digam join <palavra> primeiro ao número sandbox +14155238886.
+Limitação: cada utilizador tem de fazer o "join" UMA vez antes de receber qualquer OTP. Inviável para utilizadores reais; serve para tu testares no teu telefone.
+Produção Twilio Verify (custo por OTP enviado, não por SMS individual)
+Canal	Custo aprox. por verificação
+WhatsApp	~$0.05 (igual em qualquer país — esta é a vantagem)
+SMS Angola/Moçambique	~$0.20-$0.40
+SMS Portugal/Brasil	~$0.05-$0.10
+SMS Nigéria	~$0.10-$0.20
+Twilio dá $15 de crédito grátis quando crias a conta (chega para ~300 verificações WhatsApp ou ~50 SMS para AO).
+
+Cada "verificação" inclui:
+
+1 envio do código
+até 5 tentativas de validação dentro de 10 min
+1 reenvio (cooldown 30s)
+Se o utilizador cancelar ou expirar sem confirmar, ainda pagas o envio.
+
+Comparação prática
+Para 1000 novos signups por mês:
+
+Tudo WhatsApp: $50/mês
+Tudo SMS para AO: $200-400/mês
+Por isso o canal default que escolhi é configurável pelo admin — em mercados africanos faz muita diferença.
+
+Recomendação
+Para testar agora: usa o sandbox Twilio (grátis). Configuras tudo, testas com o teu próprio telefone via join <palavra>, validas que funciona end-to-end. Depois decide se queres pagar para produção.
+Antes de ir a produção: configura também billing alerts em Twilio Console → Billing → Usage Triggers (ex: alerta a $10 e bloqueio a $50) para não levares susto.
+Para já podes deixar SMS: o canal default no app_config está como sms, e o teu SMS provider actual (Supabase default) já funciona. O switch para WhatsApp é depois — só requer mudar a chave no painel admin. Zero code change.
+Queres avançar para Apple/iOS em vez disto? Diz.
+
+VAe5ebd522aa4e388041cee00b4f2665c8
+Recebido o Verify Service SID. Não preciso de mais nada dos teus dados do Twilio — todos os 3 valores vão directos para o Supabase Dashboard, não para o código nem para mim. Em particular o Auth Token NÃO me devias passar (é como uma password — vai só ao Supabase).
+
+Configurar no Supabase
+Link: https://supabase.com/dashboard/project/oshwrofpievzgjohrqxt/auth/providers
+
+Procura Phone na lista, clica para expandir.
+Activa "Enable phone signup" (toggle).
+SMS Provider: escolhe Twilio Verify (não "Twilio" simples — são opções diferentes).
+Preenche os 3 campos:
+Campo Supabase	Onde encontrar no Twilio
+Twilio Account SID	Twilio Console homepage → "Account Info" → "Account SID" (começa por AC…)
+Twilio Auth Token	Mesma página → "Auth Token" → clica "Show" → copia
+Twilio Verify Service SID	VAe5ebd522aa4e388041cee00b4f2665c8 (o que me mandaste)
+Save.
+Trocar o canal na app
+Na app (no Huawei, com o build novo já instalado):
+
+Perfil → Painel Admin (só aparece se o auto-admin funcionou ontem).
+Secção "Canal de OTP" → selecciona WhatsApp.
+Sai do painel.
+Testar end-to-end
+Faz logout (Definições → Terminar sessão), ou desinstala/reinstala a app.
+No ecrã de início → introduz o teu número WhatsApp com indicativo (ex: +244...).
+Clica "Enviar código por WhatsApp" (a copy deve mudar automaticamente).
+Se estiveres em sandbox: vai-te aparecer no WhatsApp do número Twilio sandbox +14155238886 uma mensagem com o código — mas só depois de teres enviado join <palavra> para esse número primeiro (o Twilio dá-te a palavra no painel sandbox). Sem o join, a mensagem nunca chega.
+Diz quando estiver configurado no Supabase + testado. Se der erro tipo "channel not enabled" ou semelhante, manda screenshot.
+
+verify if all it is ok
+A minha capacidade de verificar com a anon key é limitada (RLS bloqueia leituras directas a app_config / users). Mas posso confirmar a estrutura.
+
+Bash Probe schema existence and banner readability via anon key
+IN
+cd c:/Users/Lenovo/OneDrive/Documentos/FRIENDRIDE/ridefriend && set -a && . ./.env.local && set +a && echo "=== Schema probes (table exists if 401/empty, not 404) ===" && for t in app_config banners users; do echo -n "$t: "; curl -s -o /dev/null -w "%{http_code}\n" -H "apikey: $EXPO_PUBLIC_SUPABASE_ANON_KEY" -H "Authorization: Bearer $EXPO_PUBLIC_SUPABASE_ANON_KEY" "$EXPO_PUBLIC_SUPABASE_URL/rest/v1/$t?select=*&limit=0"; done && echo "" && echo "=== Banners (RLS allows all authenticated to read active ones) ===" && curl -s -H "apikey: $EXPO_PUBLIC_SUPABASE_ANON_KEY" -H "Authorization: Bearer $EXPO_PUBLIC_SUPABASE_ANON_KEY" "$EXPO_PUBLIC_SUPABASE_URL/rest/v1/banners?select=id,title&limit=5"
+
+OUT
+=== Schema probes (table exists if 401/empty, not 404) ===
+app_config: 200
+banners: 200
+users: 200
+
+=== Banners (RLS allows all authenticated to read active ones) ===
+[]
+Schema OK ✅ — app_config, banners, users todos respondem 200. Mas os dados específicos estão protegidos por RLS e a anon key não os vê. O que sei e o que precisas de confirmar tu:
+
+✅ Confirmado por mim
+Verificação	Estado
+Tabelas app_config, banners, users existem	✓
+Colunas users.is_admin, auth_provider, terms_accepted_at (verificado antes via Management API)	✓
+App Build #2 com Google nativo	✓
+Google Sign-In funcionou no Huawei	✓ (confirmado por ti)
+Auth de telefone via SMS	✓ (confirmado por ti — "Enviar código 123456 works")
+⏳ Precisa de confirmação tua (não tenho como ver)
+Responde sim/não a cada um:
+
+Auto-admin funcionou? No Huawei → Perfil → vês opção "Painel admin"? (Se sim → trigger Postgres promoveu acalongo@gmail.com automaticamente quando completaste o Onboarding.)
+
+Twilio Verify guardado no Supabase? No https://supabase.com/dashboard/project/oshwrofpievzgjohrqxt/auth/providers → Phone → vês "Twilio Verify" + os 3 campos preenchidos + toggle ON?
+
+Canal de OTP mudado? No Painel Admin da app → "Canal de OTP" → vês "WhatsApp" seleccionado (não "SMS")?
+
+Teste WhatsApp end-to-end? Logout → introduzes número → clicas "Enviar código por WhatsApp" → o código chegou ao WhatsApp?
+
+Alternativa: queres que faça verificação técnica completa?
+Gera novo token temporário em https://supabase.com/dashboard/account/tokens (nome ridefriend-verify), passa-mo, e eu posso fazer query directa:
+
+SELECT id, email, is_admin, auth_provider FROM users → vê todos os signups recentes
+SELECT * FROM app_config → confirma otp_channel = 'whatsapp'
+Verifica logs do Auth para ver se Twilio Verify está a ser chamado
+Revogas logo a seguir. Mas para as primeiras 4 perguntas só precisas de olhar para a app — não te dá trabalho.
+

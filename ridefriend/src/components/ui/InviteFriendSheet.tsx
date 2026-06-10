@@ -15,6 +15,7 @@ import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icon
 import { COLORS, FONTS } from '@constants/theme';
 import { useAuthStore } from '@store/authStore';
 import { useUiHostStore } from '@store/uiHostStore';
+import { getInviteUrl } from '@utils/invite';
 
 interface Props {
   visible: boolean;
@@ -30,10 +31,7 @@ export default function InviteFriendSheet({ visible, onClose }: Props) {
   const showToast = useUiHostStore((s) => s.showToast);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const inviteUrl = useMemo(
-    () => (user?.id ? `https://ridefriend.app/invite/${user.id}` : 'https://ridefriend.app'),
-    [user?.id],
-  );
+  const inviteUrl = useMemo(() => getInviteUrl(user?.id), [user?.id]);
   const shareMessage = `${INVITE_PROMPT} ${inviteUrl}`;
 
   const handleCopy = useCallback(async () => {
@@ -254,90 +252,25 @@ function ShareCircle({ bg, label, icon, iconTint, onPress }: ShareCircleProps) {
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(13,31,56,0.35)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 20,
-    gap: 14,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 38,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.gray300,
-    marginBottom: 4,
-  },
-  title: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 17,
-    color: COLORS.text,
-    textAlign: 'center',
-  },
-
-  qrCard: {
+  closeBtn: {
+    alignItems: 'center',
     backgroundColor: '#EEF1F8',
-    borderRadius: 20,
-    padding: 16,
-    gap: 12,
-    alignItems: 'stretch',
+    borderRadius: 14,
+    paddingVertical: 14,
   },
-  qrWrap: {
-    alignSelf: 'center',
-    backgroundColor: COLORS.white,
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  qrFallback: {
-    width: 196,
-    height: 196,
-    backgroundColor: COLORS.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    padding: 16,
-  },
-  qrFallbackText: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.text2,
-    textAlign: 'center',
-  },
-
-  urlRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    paddingLeft: 12,
-    paddingRight: 4,
-    paddingVertical: 4,
-    gap: 8,
-  },
-  urlText: {
-    flex: 1,
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.text2,
+  closeBtnText: {
+    color: COLORS.navy,
+    fontFamily: FONTS.soraBold,
+    fontSize: 14,
   },
   copyBtn: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
     backgroundColor: COLORS.navy,
+    borderRadius: 10,
+    flexDirection: 'row',
+    gap: 5,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 10,
   },
   copyBtnText: {
     color: COLORS.white,
@@ -345,71 +278,136 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
+  handle: {
+    alignSelf: 'center',
+    backgroundColor: COLORS.gray300,
+    borderRadius: 2,
+    height: 4,
+    marginBottom: 4,
+    width: 38,
+  },
   hint: {
+    color: COLORS.text2,
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.text2,
     textAlign: 'center',
+  },
+  overlay: {
+    backgroundColor: 'rgba(13,31,56,0.35)',
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  pressed: { opacity: 0.85 },
+
+  qrCard: {
+    alignItems: 'stretch',
+    backgroundColor: '#EEF1F8',
+    borderRadius: 20,
+    gap: 12,
+    padding: 16,
+  },
+  qrFallback: {
+    alignItems: 'center',
+    backgroundColor: COLORS.gray100,
+    borderRadius: 8,
+    height: 196,
+    justifyContent: 'center',
+    padding: 16,
+    width: 196,
+  },
+  qrFallbackText: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  qrWrap: {
+    alignSelf: 'center',
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
   },
 
   refreshBtn: {
-    alignSelf: 'center',
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    alignSelf: 'center',
     backgroundColor: COLORS.white,
+    borderRadius: 999,
+    flexDirection: 'row',
+    gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 9,
-    borderRadius: 999,
-  },
-  refreshBtnText: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 13,
-    color: COLORS.text,
   },
 
-  sharesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: 2,
-    paddingVertical: 4,
+  refreshBtnText: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 13,
   },
+  shareCircle: {
+    alignItems: 'center',
+    borderRadius: 22,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+
   shareItem: {
     alignItems: 'center',
     gap: 5,
     width: 50,
   },
-  shareCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   shareLabel: {
+    color: COLORS.text2,
     fontFamily: FONTS.bodySemi,
     fontSize: 10,
-    color: COLORS.text2,
     maxWidth: 50,
   },
+  sharesRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 2,
+    paddingVertical: 4,
+  },
+  sheet: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    gap: 14,
+    paddingBottom: 20,
+    paddingHorizontal: 18,
+    paddingTop: 10,
+  },
+  title: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 17,
+    textAlign: 'center',
+  },
+
+  urlRow: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    flexDirection: 'row',
+    gap: 8,
+    paddingLeft: 12,
+    paddingRight: 4,
+    paddingVertical: 4,
+  },
+  urlText: {
+    color: COLORS.text2,
+    flex: 1,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+  },
+
   xMark: {
     color: COLORS.white,
     fontFamily: FONTS.soraBold,
     fontSize: 18,
   },
-
-  closeBtn: {
-    backgroundColor: '#EEF1F8',
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-  },
-  closeBtnText: {
-    color: COLORS.navy,
-    fontFamily: FONTS.soraBold,
-    fontSize: 14,
-  },
-
-  pressed: { opacity: 0.85 },
 });

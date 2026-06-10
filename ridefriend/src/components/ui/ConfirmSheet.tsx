@@ -63,48 +63,17 @@ export default function ConfirmSheetHost() {
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(13,31,56,0.55)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 20,
-    paddingBottom: 32,
-    gap: 12,
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-    borderRadius: 2,
-    marginBottom: 4,
-  },
-  title: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 20,
-    color: COLORS.text,
-  },
-  message: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.text2,
-  },
   actions: {
     flexDirection: 'row',
     gap: 12,
     marginTop: 8,
   },
   cancelBtn: {
-    flex: 1,
+    alignItems: 'center',
     backgroundColor: COLORS.surface,
     borderRadius: 20,
+    flex: 1,
     paddingVertical: 14,
-    alignItems: 'center',
   },
   cancelText: {
     color: COLORS.text,
@@ -112,21 +81,52 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   confirmBtn: {
-    flex: 1,
+    alignItems: 'center',
     backgroundColor: COLORS.navy,
     borderRadius: 20,
+    flex: 1,
     paddingVertical: 14,
-    alignItems: 'center',
-  },
-  destructive: {
-    backgroundColor: COLORS.red,
   },
   confirmText: {
     color: COLORS.white,
     fontFamily: FONTS.bodySemi,
     fontSize: 14,
   },
+  destructive: {
+    backgroundColor: COLORS.red,
+  },
+  handle: {
+    alignSelf: 'center',
+    backgroundColor: COLORS.border,
+    borderRadius: 2,
+    height: 4,
+    marginBottom: 4,
+    width: 36,
+  },
+  message: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 14,
+  },
+  overlay: {
+    backgroundColor: 'rgba(13,31,56,0.55)',
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
   pressed: {
     opacity: 0.85,
+  },
+  sheet: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    gap: 12,
+    padding: 20,
+    paddingBottom: 32,
+  },
+  title: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 20,
   },
 });

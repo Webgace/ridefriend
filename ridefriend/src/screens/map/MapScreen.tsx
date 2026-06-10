@@ -51,6 +51,7 @@ export default function MapScreen() {
     detectionRadiusM,
     myLocation,
     nearbyDrivers,
+    nearbyPassengers,
     recenterRequest,
     recenterMap,
     refresh,
@@ -78,12 +79,16 @@ export default function MapScreen() {
     }
   }, []);
 
-  // Pede a primeira localização ao montar.
+  // Pede a primeira localização e arranca o tracking automaticamente — sem isto, o ponto
+  // do utilizador no mapa é fixado à primeira leitura e não se move com ele.
   useEffect(() => {
     if (!myLocation) {
       getCurrentLocationOnce().catch(() => null);
     }
-  }, [myLocation, getCurrentLocationOnce]);
+    if (!isTracking) {
+      startPassengerMode().catch(() => null);
+    }
+  }, [myLocation, isTracking, getCurrentLocationOnce, startPassengerMode]);
 
   const handleToggleSharing = useCallback(async () => {
     if (isTracking) {
@@ -128,6 +133,7 @@ export default function MapScreen() {
               radiusM={detectionRadiusM}
               myLocation={myLocation}
               drivers={nearbyDrivers}
+              passengers={nearbyPassengers}
               recenterRequest={recenterRequest}
             />
           ) : (
@@ -196,6 +202,10 @@ export default function MapScreen() {
               <Text style={styles.legendText}>Motorista</Text>
             </View>
             <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: COLORS.green }]} />
+              <Text style={styles.legendText}>Passageiro</Text>
+            </View>
+            <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: COLORS.amber }]} />
               <Text style={styles.legendText}>Tu</Text>
             </View>
@@ -246,16 +256,19 @@ export default function MapScreen() {
   );
 }
 
+interface CanvasMarker {
+  id: string;
+  location: { latitude: number; longitude: number };
+}
+
 interface CanvasProps {
   MapLibre: any;
   region: { latitude: number; longitude: number };
   zoom: number;
   radiusM: number;
   myLocation: { lat: number; lng: number } | null;
-  drivers: Array<{
-    id: string;
-    location: { latitude: number; longitude: number };
-  }>;
+  drivers: CanvasMarker[];
+  passengers: CanvasMarker[];
   recenterRequest: number;
 }
 
@@ -266,6 +279,7 @@ function MapCanvas({
   radiusM,
   myLocation,
   drivers,
+  passengers,
   recenterRequest,
 }: CanvasProps) {
   const cameraRef = useRef<any>(null);
@@ -339,6 +353,17 @@ function MapCanvas({
           <View style={styles.driverMarker} />
         </Marker>
       ))}
+
+      {passengers.map((p) => (
+        <Marker
+          key={p.id}
+          id={`passenger:${p.id}`}
+          lngLat={[p.location.longitude, p.location.latitude]}
+          anchor="center"
+        >
+          <View style={styles.passengerMarker} />
+        </Marker>
+      ))}
     </Map>
   );
 }
@@ -346,183 +371,191 @@ function MapCanvas({
 const MAP_HEIGHT = 360;
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.white },
-  scroll: { flex: 1, backgroundColor: COLORS.surface },
-  scrollContent: { padding: 16, paddingBottom: 120, gap: 14 },
+  code: {
+    color: COLORS.navy,
+    fontFamily: FONTS.bodySemi,
+  },
+  driverBody: { flex: 1, gap: 2 },
+  driverList: {
+    gap: 10,
+  },
 
+  driverMarker: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.white,
+    borderRadius: 7,
+    borderWidth: 2,
+    height: 14,
+    width: 14,
+  },
+  driverMeta: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 12 },
+  driverName: { color: COLORS.text, fontFamily: FONTS.soraBold, fontSize: 14 },
+  driverRow: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    padding: 12,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 22,
+  },
+
+  emptyText: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  iconBtn: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 18,
+    elevation: 2,
+    height: 36,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    width: 36,
+  },
+  legend: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 999,
+    bottom: 14,
+    elevation: 2,
+    flexDirection: 'row',
+    gap: 10,
+    left: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    position: 'absolute',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+  },
+  legendDot: { borderRadius: 4, height: 8, width: 8 },
+
+  legendItem: { alignItems: 'center', flexDirection: 'row', gap: 5 },
+
+  legendText: { color: COLORS.text, fontFamily: FONTS.bodySemi, fontSize: 11 },
   mapCard: {
-    height: MAP_HEIGHT,
     backgroundColor: COLORS.gray100,
     borderRadius: 22,
+    elevation: 3,
+    height: MAP_HEIGHT,
     overflow: 'hidden',
     position: 'relative',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
-    elevation: 3,
   },
+
   mapPlaceholder: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
+    gap: 8,
     justifyContent: 'center',
     padding: 24,
-    gap: 8,
   },
-  placeholderTitle: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 16,
-    color: COLORS.text,
+  passengerMarker: {
+    backgroundColor: COLORS.green,
+    borderColor: COLORS.white,
+    borderRadius: 6,
+    borderWidth: 2,
+    height: 12,
+    width: 12,
   },
   placeholderBody: {
+    color: COLORS.text2,
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.text2,
-    textAlign: 'center',
     lineHeight: 18,
+    textAlign: 'center',
   },
-  code: {
-    fontFamily: FONTS.bodySemi,
-    color: COLORS.navy,
+  placeholderTitle: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 16,
+  },
+
+  rightControls: {
+    gap: 8,
+    position: 'absolute',
+    right: 12,
+    top: 12,
+  },
+  safe: { backgroundColor: COLORS.white, flex: 1 },
+  scroll: { backgroundColor: COLORS.surface, flex: 1 },
+
+  scrollContent: { gap: 14, padding: 16, paddingBottom: 120 },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    paddingHorizontal: 2,
+  },
+
+  sectionTitle: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 15,
+  },
+  selfMarker: {
+    backgroundColor: COLORS.amber,
+    borderColor: COLORS.white,
+    borderRadius: 9,
+    borderWidth: 3,
+    height: 18,
+    width: 18,
   },
 
   sharingPill: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 999,
+    flexDirection: 'row',
     gap: 6,
+    left: 12,
     paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 999,
+    position: 'absolute',
+    top: 12,
   },
-  sharingPillOn: { backgroundColor: COLORS.green },
   sharingPillOff: { backgroundColor: COLORS.gray400 },
+  sharingPillOn: { backgroundColor: COLORS.green },
   sharingPillText: {
     color: COLORS.white,
     fontFamily: FONTS.soraBold,
     fontSize: 12,
   },
-
   zoomBtn: {
-    position: 'absolute',
-    top: 54,
-    left: 12,
-    width: 32,
-    height: 32,
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
     borderRadius: 8,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
+    elevation: 2,
+    height: 32,
     justifyContent: 'center',
+    left: 12,
+    position: 'absolute',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 2,
+    top: 54,
+    width: 32,
   },
-
-  rightControls: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    gap: 8,
-  },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-
-  legend: {
-    position: 'absolute',
-    bottom: 14,
-    left: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontFamily: FONTS.bodySemi, fontSize: 11, color: COLORS.text },
-
-  selfMarker: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: COLORS.amber,
-    borderWidth: 3,
-    borderColor: COLORS.white,
-  },
-  driverMarker: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: COLORS.navy,
-    borderWidth: 2,
-    borderColor: COLORS.white,
-  },
-
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 2,
-  },
-  sectionTitle: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 15,
-    color: COLORS.text,
-  },
-
-  emptyCard: {
-    backgroundColor: COLORS.surface,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderRadius: 14,
-    paddingVertical: 22,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 13,
-    color: COLORS.text2,
-    textAlign: 'center',
-  },
-
-  driverList: {
-    gap: 10,
-  },
-  driverRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: COLORS.white,
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  driverBody: { flex: 1, gap: 2 },
-  driverName: { fontFamily: FONTS.soraBold, fontSize: 14, color: COLORS.text },
-  driverMeta: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2 },
 });

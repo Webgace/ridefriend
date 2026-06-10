@@ -4,11 +4,13 @@ import { useMarketStore } from '@store/marketStore';
 import {
   getSession,
   getUser,
+  signInWithIdToken,
   signInWithPhone,
   signOut as supabaseSignOut,
   verifyOtp as supabaseVerifyOtp,
   supabase,
 } from '@services/supabase';
+import { getAppConfigSnapshot } from '@hooks/useAppConfig';
 import { MarketCode } from '@types/index';
 
 const englishMarketCodes: MarketCode[] = ['ng'];
@@ -38,6 +40,16 @@ function getAuthErrorMessage(type: 'otpSendFailed' | 'otpVerifyFailed' | 'signOu
   return messages[type];
 }
 
+/**
+ * Lê o canal OTP escolhido pelo admin em app_config (sms ou whatsapp).
+ * Falha-safe: assume 'sms' se a config ainda não foi carregada.
+ */
+function resolveOtpChannel(): 'sms' | 'whatsapp' {
+  const snapshot = getAppConfigSnapshot();
+  const raw = (snapshot.otp_channel ?? '').toLowerCase().trim();
+  return raw === 'whatsapp' ? 'whatsapp' : 'sms';
+}
+
 export async function sendOTP(phone: string): Promise<void> {
   const config = useMarketStore.getState().config;
 
@@ -46,9 +58,10 @@ export async function sendOTP(phone: string): Promise<void> {
   }
 
   // O OTP é gerado e enviado pelo Supabase Auth (provider configurado no dashboard).
+  // O canal (SMS vs WhatsApp) é definido pelo admin via app_config.otp_channel.
   // O sms.service.ts (PL3) cobre fluxos paralelos como SOS backup e alertas de rede.
   try {
-    await signInWithPhone(phone);
+    await signInWithPhone(phone, resolveOtpChannel());
   } catch (error) {
     console.error('sendOTP error', error);
     const raw = error instanceof Error ? error.message : String(error);
@@ -128,6 +141,126 @@ export async function refreshSession() {
   }
 }
 
+interface SocialSignInResult {
+  /** True quando já existe `users` row para este auth.uid — login normal. */
+  hasProfile: boolean;
+  email: string | null;
+  /** Nome sugerido a partir do provider, se vier — usado para pré-preencher onboarding. */
+  suggestedName: string | null;
+  avatarUrl: string | null;
+}
+
+/**
+ * Lê a linha de public.users para o auth.uid dado e popula o authStore.
+ * Devolve true se encontrou perfil (i.e., o utilizador já passou pelo Onboarding).
+ * Usado tanto no fluxo OAuth como no boot da app (initializeAuthStore).
+ */
+export async function loadUserProfileIntoStore(authUserId: string): Promise<boolean> {
+  const authStore = useAuthStore.getState();
+  const { data: profile, error } = await supabase
+    .from('users')
+    .select(
+      'id, phone, name, email, photo_url, rating_avg, ride_count, is_driver, is_admin, terms_accepted_at, market_code, created_at, updated_at',
+    )
+    .eq('id', authUserId)
+    .maybeSingle();
+  if (error || !profile) return false;
+  authStore.setUser({
+    id: profile.id,
+    phone: profile.phone ?? '',
+    name: profile.name,
+    email: profile.email ?? undefined,
+    avatar: profile.photo_url ?? undefined,
+    rating: Number(profile.rating_avg ?? 0),
+    totalRides: profile.ride_count ?? 0,
+    isDriver: profile.is_driver ?? false,
+    isPassenger: !(profile.is_driver ?? false),
+    isAdmin: profile.is_admin ?? false,
+    termsAcceptedAt: profile.terms_accepted_at ?? null,
+    marketCode: profile.market_code as MarketCode,
+    createdAt: profile.created_at,
+    updatedAt: profile.updated_at,
+  });
+  return true;
+}
+
+/**
+ * Centraliza o pós-OAuth: troca o id_token por sessão Supabase, popula o
+ * authStore com a sessão + auth.user, e indica se o utilizador precisa de
+ * passar pelo Onboarding (ainda não tem `users` row) ou se já está bom.
+ */
+async function completeSocialSignIn(
+  provider: 'google' | 'apple',
+  token: string,
+  nonce?: string,
+): Promise<SocialSignInResult> {
+  const authStore = useAuthStore.getState();
+  const marketCode = useMarketStore.getState().config?.code;
+
+  const response = await signInWithIdToken({ provider, token, nonce });
+  if (!response?.session) {
+    throw new Error('Missing session after OAuth verification');
+  }
+
+  authStore.setSession(response.session);
+  authStore.setIsAuthenticated(true);
+
+  const authUser = await getUser();
+  const email = authUser?.email ?? null;
+  const suggestedName =
+    (authUser?.user_metadata?.full_name as string | undefined) ||
+    (authUser?.user_metadata?.name as string | undefined) ||
+    null;
+  const avatarUrl =
+    (authUser?.user_metadata?.avatar_url as string | undefined) ||
+    (authUser?.user_metadata?.picture as string | undefined) ||
+    null;
+
+  // Já existe perfil? Lê pelo PK = auth.uid() — reutiliza o helper para evitar
+  // divergência entre OAuth e boot da app.
+  if (authUser?.id) {
+    const found = await loadUserProfileIntoStore(authUser.id);
+    if (found) {
+      return { hasProfile: true, email, suggestedName, avatarUrl };
+    }
+  }
+
+  // Sem perfil ainda — deixa o ecrã de Onboarding chamar createUserProfile.
+  // O authStore ganha um user "stub" com termsAcceptedAt=null. O RootNavigator
+  // usa este campo como flag de "precisa de Onboarding" e mostra o OnboardingStack.
+  // O authProvider fica no stub para o Onboarding o propagar a createUserProfile.
+  authStore.setUser(
+    authUser
+      ? {
+          id: authUser.id,
+          phone: authUser.phone || '',
+          name: suggestedName || '',
+          email: email || undefined,
+          avatar: avatarUrl || undefined,
+          rating: 0,
+          totalRides: 0,
+          isDriver: false,
+          isPassenger: true,
+          isAdmin: false,
+          termsAcceptedAt: null,
+          marketCode: marketCode ?? 'ao',
+          authProvider: provider,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      : null,
+  );
+  return { hasProfile: false, email, suggestedName, avatarUrl };
+}
+
+export async function signInWithGoogleIdToken(token: string) {
+  return completeSocialSignIn('google', token);
+}
+
+export async function signInWithAppleIdToken(token: string, nonce?: string) {
+  return completeSocialSignIn('apple', token, nonce);
+}
+
 export async function createUserProfile(payload: {
   name: string;
   email?: string;
@@ -136,6 +269,10 @@ export async function createUserProfile(payload: {
   is_driver?: boolean;
   /** ISO timestamp; obrigatório pelo signup para auditar aceitação T&C / PP. */
   terms_accepted_at?: string;
+  /** 'phone' (default) | 'google' | 'apple' | 'email' — audit trail. */
+  auth_provider?: 'phone' | 'google' | 'apple' | 'email';
+  /** URL do avatar vindo do provider OAuth, se houver. */
+  photo_url?: string | null;
 }) {
   const currentUser = await getUser();
 
@@ -143,7 +280,10 @@ export async function createUserProfile(payload: {
     throw new Error('Não foi possível encontrar o utilizador autenticado.');
   }
 
-  const phoneValue = payload.phone?.trim() || currentUser.phone || '';
+  // Phone agora é NULLABLE — para Google/Apple sem número, passamos null em vez
+  // de '' (string vazia colide na UNIQUE constraint).
+  const phoneTrimmed = payload.phone?.trim() || currentUser.phone || '';
+  const phoneValue = phoneTrimmed.length > 0 ? phoneTrimmed : null;
 
   const { data, error } = await supabase
     .from('users')
@@ -152,11 +292,13 @@ export async function createUserProfile(payload: {
         id: currentUser.id,
         phone: phoneValue,
         name: payload.name,
-        email: payload.email ?? null,
+        email: payload.email ?? currentUser.email ?? null,
+        photo_url: payload.photo_url ?? null,
         is_driver: payload.is_driver ?? false,
         terms_accepted_at: payload.terms_accepted_at ?? null,
         market_code: payload.market_code,
-      },
+        auth_provider: payload.auth_provider ?? 'phone',
+      } as never,
     ])
     .select()
     .single();

@@ -96,85 +96,73 @@ export default function DriverCard({ driver, onRequest }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: COLORS.white,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 20,
-    padding: 14,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
-    elevation: 2,
+  actions: {
+    alignItems: 'flex-end',
+    gap: 8,
   },
-  cardApproaching: {
-    borderColor: '#6EE7B7',
-    backgroundColor: '#F0FDF4',
+  approach: {
+    marginTop: 6,
   },
   body: {
     flex: 1,
     gap: 4,
   },
-  headerRow: {
-    flexDirection: 'row',
+  card: {
     alignItems: 'center',
-    gap: 8,
-  },
-  name: {
-    flexShrink: 1,
-    fontFamily: FONTS.bodySemi,
-    fontSize: 15,
-    color: COLORS.text,
-  },
-  tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
     borderRadius: 20,
-  },
-  tagText: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 11,
-  },
-  meta: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.text2,
-  },
-  statusRow: {
+    borderWidth: 1,
+    elevation: 2,
     flexDirection: 'row',
+    gap: 12,
+    padding: 14,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
+  },
+  cardApproaching: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#6EE7B7',
+  },
+  headerRow: {
     alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
-  },
-  rating: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 12,
-    color: COLORS.text2,
-  },
-  approach: {
-    marginTop: 6,
-  },
-  actions: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
     gap: 8,
   },
   iconBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    backgroundColor: COLORS.surface,
     alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderRadius: 17,
+    borderWidth: 1,
+    height: 34,
     justifyContent: 'center',
+    width: 34,
   },
   iconBtnText: {
-    fontSize: 16,
     color: COLORS.text,
+    fontSize: 16,
+  },
+  meta: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+  },
+  name: {
+    color: COLORS.text,
+    flexShrink: 1,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 15,
+  },
+  pressed: {
+    opacity: 0.8,
+  },
+  rating: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 12,
   },
   requestBtn: {
     backgroundColor: COLORS.navy,
@@ -187,7 +175,19 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bodySemi,
     fontSize: 12,
   },
-  pressed: {
-    opacity: 0.8,
+  statusRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 2,
+  },
+  tag: {
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  tagText: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 11,
   },
 });

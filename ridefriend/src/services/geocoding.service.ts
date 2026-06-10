@@ -217,7 +217,7 @@ async function searchAddressGoogle(
 export async function getNearestStop(
   lat: number,
   lng: number,
-  radiusMeters = 800,
+  radiusMeters = 2000,
 ): Promise<BusStop | null> {
   try {
     const config = useMarketStore.getState().config;

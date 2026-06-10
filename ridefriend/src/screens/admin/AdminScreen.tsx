@@ -31,6 +31,20 @@ const CONFIG_FIELDS: { key: AppConfigKey; label: string; placeholder: string }[]
   { key: 'privacy_email', label: 'Email de privacidade', placeholder: 'privacidade@...' },
   { key: 'privacy_url', label: 'URL da Política de Privacidade', placeholder: 'https://...' },
   { key: 'terms_url', label: 'URL dos Termos', placeholder: 'https://...' },
+  {
+    key: 'admin_emails',
+    label: 'Admins (emails separados por vírgula)',
+    placeholder: 'admin1@...,admin2@...',
+  },
+];
+
+const OTP_CHANNELS: { value: 'sms' | 'whatsapp'; label: string; hint: string }[] = [
+  { value: 'sms', label: 'SMS', hint: 'Canal padrão. Funciona em qualquer telefone.' },
+  {
+    value: 'whatsapp',
+    label: 'WhatsApp',
+    hint: 'Mais barato em AO/MZ. Requer Twilio Verify + WhatsApp Business aprovado.',
+  },
 ];
 
 export default function AdminScreen() {
@@ -63,6 +77,28 @@ export default function AdminScreen() {
       </SafeAreaView>
     );
   }
+
+  const otpChannelCurrent =
+    ((config.otp_channel ?? 'sms') as string).toLowerCase() === 'whatsapp'
+      ? 'whatsapp'
+      : 'sms';
+  const [otpSaving, setOtpSaving] = useState(false);
+  const handlePickOtpChannel = async (channel: 'sms' | 'whatsapp') => {
+    if (channel === otpChannelCurrent || otpSaving) return;
+    setOtpSaving(true);
+    try {
+      await setAppConfigValue('otp_channel', channel);
+      showToast({ message: `Canal OTP: ${channel.toUpperCase()}.`, tone: 'success' });
+      await refreshConfig();
+    } catch (e) {
+      showToast({
+        message: e instanceof Error ? e.message : 'Falha ao actualizar canal.',
+        tone: 'error',
+      });
+    } finally {
+      setOtpSaving(false);
+    }
+  };
 
   const handleSaveConfig = async (key: AppConfigKey) => {
     const draft = drafts[key];
@@ -241,11 +277,62 @@ export default function AdminScreen() {
           )}
         </View>
 
+        {/* Canal OTP (SMS vs WhatsApp) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Canal de OTP</Text>
+          <Text style={styles.sectionHint}>
+            Como o código de verificação é entregue ao utilizador. WhatsApp precisa
+            de Twilio Verify + número WhatsApp Business aprovado pela Meta.
+          </Text>
+          <View style={styles.otpRow}>
+            {OTP_CHANNELS.map((c) => {
+              const active = c.value === otpChannelCurrent;
+              return (
+                <Pressable
+                  key={c.value}
+                  onPress={() => handlePickOtpChannel(c.value)}
+                  disabled={otpSaving}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Canal ${c.label}`}
+                  style={({ pressed }) => [
+                    styles.otpOption,
+                    active && styles.otpOptionActive,
+                    pressed && styles.pressed,
+                    otpSaving && styles.btnDisabled,
+                  ]}
+                >
+                  <Ionicons
+                    name={c.value === 'whatsapp' ? 'logo-whatsapp' : 'chatbubble'}
+                    size={18}
+                    color={active ? COLORS.white : COLORS.text}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[styles.otpOptionLabel, active && styles.otpOptionLabelActive]}
+                    >
+                      {c.label}
+                    </Text>
+                    <Text
+                      style={[styles.otpOptionHint, active && styles.otpOptionHintActive]}
+                    >
+                      {c.hint}
+                    </Text>
+                  </View>
+                  {active ? (
+                    <Ionicons name="checkmark-circle" size={18} color={COLORS.white} />
+                  ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
         {/* App Config */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Configuração da app</Text>
           <Text style={styles.sectionHint}>
             Estes valores aparecem em "Sobre" e em links de Termos / Privacidade.
+            "Admins" controla quem entra automaticamente no painel — separa emails por vírgula.
           </Text>
           <View style={styles.configCard}>
             {CONFIG_FIELDS.map((f) => {
@@ -309,152 +396,178 @@ function formatDate(iso: string): string {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.surface },
-  content: { padding: 16, paddingBottom: 40, gap: 18 },
-
-  denied: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  deniedTitle: { fontFamily: FONTS.soraBold, fontSize: 18, color: COLORS.text },
-  deniedBody: { fontFamily: FONTS.bodyRegular, fontSize: 13, color: COLORS.text2 },
-
-  hero: {
-    backgroundColor: COLORS.navy,
-    borderRadius: 20,
-    padding: 18,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  heroDecor: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(245,158,11,0.15)',
-    top: -40,
-    right: -30,
-  },
-  heroIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(217,119,6,0.22)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  heroTitle: { fontFamily: FONTS.soraBold, fontSize: 20, color: COLORS.white },
-  heroBody: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.78)',
-    marginTop: 4,
-  },
-
-  section: { gap: 10 },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sectionTitle: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 13,
-    color: COLORS.text2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.06 * 13,
-  },
-  sectionHint: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.text2,
-  },
-
   addBtn: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
     backgroundColor: COLORS.navy,
+    borderRadius: 999,
+    flexDirection: 'row',
+    gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 999,
   },
   addBtnText: { color: COLORS.white, fontFamily: FONTS.soraBold, fontSize: 12 },
 
-  emptyCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    paddingVertical: 18,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-  },
-  emptyText: { fontFamily: FONTS.bodyRegular, fontSize: 13, color: COLORS.text2 },
-
-  list: { gap: 8 },
+  bannerMeta: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 11 },
   bannerRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
     backgroundColor: COLORS.white,
-    padding: 12,
     borderRadius: 14,
+    flexDirection: 'row',
+    gap: 10,
+    padding: 12,
   },
-  bannerTitleLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  bannerTitle: { fontFamily: FONTS.soraBold, fontSize: 14, color: COLORS.text, flexShrink: 1 },
-  bannerMeta: { fontFamily: FONTS.bodyRegular, fontSize: 11, color: COLORS.text2 },
-  statusBadge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 999 },
-  statusOn: { backgroundColor: '#D1FAE5' },
-  statusOff: { backgroundColor: COLORS.gray100 },
-  statusText: { fontFamily: FONTS.bodySemi, fontSize: 10 },
-  statusTextOn: { color: '#047857' },
-  statusTextOff: { color: COLORS.text2 },
+  bannerTitle: { color: COLORS.text, flexShrink: 1, fontFamily: FONTS.soraBold, fontSize: 14 },
 
-  rowActions: { flexDirection: 'row', gap: 4 },
-  iconBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: COLORS.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconBtnDanger: { backgroundColor: COLORS.redLight },
-
+  bannerTitleLine: { alignItems: 'center', flexDirection: 'row', gap: 6 },
+  btnDisabled: { opacity: 0.4 },
   configCard: {
     backgroundColor: COLORS.white,
     borderRadius: 14,
-    padding: 12,
     gap: 12,
+    padding: 12,
   },
-  configRow: { gap: 4 },
-  configLabel: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 12,
-    color: COLORS.text2,
-  },
-  configInputRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   configInput: {
-    flex: 1,
     backgroundColor: COLORS.gray50,
-    borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderWidth: 1,
+    color: COLORS.text,
+    flex: 1,
     fontFamily: FONTS.bodyRegular,
     fontSize: 13,
-    color: COLORS.text,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  configInputDirty: { borderColor: COLORS.navy, backgroundColor: COLORS.white },
+  configInputDirty: { backgroundColor: COLORS.white, borderColor: COLORS.navy },
+
+  configInputRow: { alignItems: 'center', flexDirection: 'row', gap: 6 },
+  configLabel: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 12,
+  },
+  configRow: { gap: 4 },
   configSave: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: COLORS.navy,
     alignItems: 'center',
+    backgroundColor: COLORS.navy,
+    borderRadius: 10,
+    height: 38,
     justifyContent: 'center',
+    width: 38,
   },
-  btnDisabled: { opacity: 0.4 },
+
+  content: { gap: 18, padding: 16, paddingBottom: 40 },
+  denied: { alignItems: 'center', flex: 1, gap: 8, justifyContent: 'center' },
+
+  deniedBody: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 13 },
+  deniedTitle: { color: COLORS.text, fontFamily: FONTS.soraBold, fontSize: 18 },
+
+  emptyCard: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 18,
+  },
+  emptyText: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 13 },
+  hero: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 20,
+    overflow: 'hidden',
+    padding: 18,
+    position: 'relative',
+  },
+  heroBody: {
+    color: 'rgba(255,255,255,0.78)',
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    marginTop: 4,
+  },
+  heroDecor: {
+    backgroundColor: 'rgba(245,158,11,0.15)',
+    borderRadius: 60,
+    height: 120,
+    position: 'absolute',
+    right: -30,
+    top: -40,
+    width: 120,
+  },
+  heroIcon: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(217,119,6,0.22)',
+    borderRadius: 12,
+    height: 40,
+    justifyContent: 'center',
+    marginBottom: 8,
+    width: 40,
+  },
+  heroTitle: { color: COLORS.white, fontFamily: FONTS.soraBold, fontSize: 20 },
+  iconBtn: {
+    alignItems: 'center',
+    backgroundColor: COLORS.gray100,
+    borderRadius: 15,
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+  },
+  iconBtnDanger: { backgroundColor: COLORS.redLight },
+  list: { gap: 8 },
+  otpOption: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+
+  otpOptionActive: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.navy,
+  },
+  otpOptionHint: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 11,
+    marginTop: 2,
+  },
+  otpOptionHintActive: { color: 'rgba(255,255,255,0.78)' },
+
+  otpOptionLabel: { color: COLORS.text, fontFamily: FONTS.soraBold, fontSize: 14 },
+  otpOptionLabelActive: { color: COLORS.white },
+  otpRow: { gap: 8 },
   pressed: { opacity: 0.85 },
+  rowActions: { flexDirection: 'row', gap: 4 },
+  safe: { backgroundColor: COLORS.surface, flex: 1 },
+  section: { gap: 10 },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  sectionHint: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+  },
+
+  sectionTitle: {
+    color: COLORS.text2,
+    fontFamily: FONTS.soraBold,
+    fontSize: 13,
+    letterSpacing: 0.06 * 13,
+    textTransform: 'uppercase',
+  },
+  statusBadge: { borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
+  statusOff: { backgroundColor: COLORS.gray100 },
+  statusOn: { backgroundColor: '#D1FAE5' },
+  statusText: { fontFamily: FONTS.bodySemi, fontSize: 10 },
+  statusTextOff: { color: COLORS.text2 },
+  statusTextOn: { color: '#047857' },
 });

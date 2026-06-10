@@ -18,6 +18,7 @@ import i18n from '@i18n/index';
 import { useMarket } from '@hooks/useMarket';
 import { useAppConfig } from '@hooks/useAppConfig';
 import { createUserProfile } from '@services/auth.service';
+import { useAuthStore } from '@store/authStore';
 import { useUiHostStore } from '@store/uiHostStore';
 import type { MarketCode } from '../../types';
 import MarketSelectScreen from './MarketSelectScreen';
@@ -51,10 +52,17 @@ export default function OnboardingScreen() {
   const setMarket = market.setMarket;
   const showToast = useUiHostStore((s) => s.showToast);
   const { config: appConfig } = useAppConfig();
+  const stubUser = useAuthStore((s) => s.user);
+  // O authProvider vem do stub do authStore preenchido por completeSocialSignIn.
+  // Default 'phone' por retro-compat (caso o phone-OTP volte a ser activado).
+  const authProvider = stubUser?.authProvider ?? 'phone';
+
+  // Pré-preenche nome/email a partir do stub do authStore (preenchido por
+  // completeSocialSignIn quando o utilizador vem de Google/Apple).
   const [step, setStep] = useState<'confirm' | 'profile'>('confirm');
   const [showMarketPicker, setShowMarketPicker] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(stubUser?.name ?? '');
+  const [email, setEmail] = useState(stubUser?.email ?? '');
   const [neighborhood, setNeighborhood] = useState('');
   const [role, setRole] = useState<Role>('passenger');
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -97,6 +105,8 @@ export default function OnboardingScreen() {
         // "both" e "driver" → is_driver=true (utilizador descobrível como motorista).
         is_driver: role !== 'passenger',
         terms_accepted_at: new Date().toISOString(),
+        auth_provider: authProvider,
+        photo_url: stubUser?.avatar ?? null,
       });
       showToast({ message: 'Perfil criado com sucesso.', tone: 'success' });
     } catch (error: unknown) {
@@ -387,229 +397,229 @@ function ProfileStep({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.surface },
-  flex: { flex: 1 },
-  content: { padding: 20, paddingBottom: 32, gap: 22 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { fontFamily: FONTS.bodyRegular, color: COLORS.text2 },
-
-  progressRow: {
-    flexDirection: 'row',
+  backBtn: {
     alignItems: 'center',
-    gap: 8,
-    paddingTop: 4,
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 18,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: 'center',
+    width: 36,
   },
-  progressDot: {
+  btnDisabled: { opacity: 0.6 },
+  centered: { alignItems: 'center', flex: 1, justifyContent: 'center' },
+  checkbox: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.gray400,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    height: 22,
+    justifyContent: 'center',
+    marginTop: 1,
     width: 22,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.gray200,
   },
-  progressDotActive: { backgroundColor: COLORS.navy },
-  progressText: {
-    marginLeft: 6,
+  checkboxOn: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.navy,
+  },
+
+  content: { gap: 22, padding: 20, paddingBottom: 32 },
+  fieldGroup: { gap: 6 },
+  fieldLabel: {
+    color: COLORS.text,
     fontFamily: FONTS.bodySemi,
     fontSize: 12,
-    color: COLORS.text2,
+    paddingHorizontal: 2,
   },
-
-  step: { gap: 14 },
+  flex: { flex: 1 },
 
   hero: {
     backgroundColor: COLORS.navy,
     borderRadius: 22,
-    padding: 20,
-    overflow: 'hidden',
-    position: 'relative',
     gap: 4,
+    overflow: 'hidden',
+    padding: 20,
+    position: 'relative',
   },
-  heroDecorTop: {
-    position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(245,158,11,0.12)',
-    top: -50,
-    right: -40,
+
+  heroBody: {
+    color: 'rgba(255,255,255,0.78)',
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 8,
   },
   heroDecorBottom: {
-    position: 'absolute',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
     backgroundColor: 'rgba(245,158,11,0.08)',
+    borderRadius: 45,
     bottom: -30,
+    height: 90,
+    position: 'absolute',
     right: 30,
+    width: 90,
+  },
+  heroDecorTop: {
+    backgroundColor: 'rgba(245,158,11,0.12)',
+    borderRadius: 70,
+    height: 140,
+    position: 'absolute',
+    right: -40,
+    top: -50,
+    width: 140,
   },
   heroIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: 'rgba(217,119,6,0.22)',
     alignItems: 'center',
+    backgroundColor: 'rgba(217,119,6,0.22)',
+    borderRadius: 14,
+    height: 44,
     justifyContent: 'center',
     marginBottom: 8,
+    width: 44,
   },
   heroTitle: {
+    color: 'rgba(255,255,255,0.7)',
     fontFamily: FONTS.bodySemi,
     fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   heroValue: {
+    color: COLORS.white,
     fontFamily: FONTS.soraBold,
     fontSize: 24,
-    color: COLORS.white,
     marginTop: 2,
-  },
-  heroBody: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.78)',
-    marginTop: 8,
-    lineHeight: 19,
-  },
-
-  stepHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  stepTitle: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 20,
-    color: COLORS.text,
-  },
-  stepSub: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 13,
-    color: COLORS.text2,
-    marginTop: 2,
-  },
-
-  fieldGroup: { gap: 6 },
-  fieldLabel: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 12,
-    color: COLORS.text,
-    paddingHorizontal: 2,
   },
   input: {
     backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
+    color: COLORS.text,
     fontFamily: FONTS.bodyRegular,
     fontSize: 14,
-    color: COLORS.text,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
   },
 
+  loadingText: { color: COLORS.text2, fontFamily: FONTS.bodyRegular },
+  pressed: { opacity: 0.85 },
   primaryBtn: {
-    backgroundColor: COLORS.navy,
-    paddingVertical: 15,
-    borderRadius: 14,
     alignItems: 'center',
+    backgroundColor: COLORS.navy,
+    borderRadius: 14,
+    paddingVertical: 15,
   },
   primaryBtnText: {
     color: COLORS.white,
     fontFamily: FONTS.soraBold,
     fontSize: 14,
   },
-  btnDisabled: { opacity: 0.6 },
 
-  secondaryBtn: {
-    backgroundColor: COLORS.white,
-    paddingVertical: 15,
-    borderRadius: 14,
+  progressDot: {
+    backgroundColor: COLORS.gray200,
+    borderRadius: 2,
+    height: 4,
+    width: 22,
+  },
+  progressDotActive: { backgroundColor: COLORS.navy },
+  progressRow: {
     alignItems: 'center',
-    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
+    paddingTop: 4,
+  },
+
+  progressText: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 12,
+    marginLeft: 6,
+  },
+  roleCard: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
     borderColor: COLORS.border,
+    borderRadius: 14,
+    borderWidth: 1,
+    flex: 1,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+  },
+  roleCardActive: {
+    backgroundColor: COLORS.navy,
+    borderColor: COLORS.navy,
+  },
+
+  roleLabel: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 13,
+  },
+  roleLabelActive: { color: COLORS.white },
+
+  roleRow: { flexDirection: 'row', gap: 8 },
+  roleSub: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 10,
+  },
+  roleSubActive: { color: 'rgba(255,255,255,0.75)' },
+  safe: { backgroundColor: COLORS.surface, flex: 1 },
+  secondaryBtn: {
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 15,
   },
   secondaryBtnText: {
     color: COLORS.text,
     fontFamily: FONTS.soraBold,
     fontSize: 14,
   },
+  step: { gap: 14 },
 
-  roleRow: { flexDirection: 'row', gap: 8 },
-  roleCard: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+  stepHeader: {
     alignItems: 'center',
-    gap: 4,
-  },
-  roleCardActive: {
-    backgroundColor: COLORS.navy,
-    borderColor: COLORS.navy,
-  },
-  roleLabel: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 13,
-    color: COLORS.text,
-  },
-  roleLabelActive: { color: COLORS.white },
-  roleSub: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 10,
-    color: COLORS.text2,
-  },
-  roleSubActive: { color: 'rgba(255,255,255,0.75)' },
-
-  termsRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     gap: 10,
-    paddingVertical: 4,
   },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    borderColor: COLORS.gray400,
-    backgroundColor: COLORS.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  checkboxOn: {
-    backgroundColor: COLORS.navy,
-    borderColor: COLORS.navy,
-  },
-  termsText: {
-    flex: 1,
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
+  stepSub: {
     color: COLORS.text2,
-    lineHeight: 18,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 13,
+    marginTop: 2,
+  },
+  stepTitle: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 20,
   },
   termsLink: {
-    fontFamily: FONTS.bodySemi,
     color: COLORS.navy,
+    fontFamily: FONTS.bodySemi,
     textDecorationLine: 'underline',
   },
   termsLinkDisabled: {
     color: COLORS.text3,
     textDecorationLine: 'none',
   },
+  termsRow: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 10,
+    paddingVertical: 4,
+  },
 
-  pressed: { opacity: 0.85 },
+  termsText: {
+    color: COLORS.text2,
+    flex: 1,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    lineHeight: 18,
+  },
 });

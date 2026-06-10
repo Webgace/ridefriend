@@ -33,15 +33,15 @@ export default function ApproachBar({ progress, style }: Props) {
 }
 
 const styles = StyleSheet.create({
-  track: {
-    height: 4,
-    backgroundColor: COLORS.border,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
   fill: {
-    height: '100%',
     backgroundColor: COLORS.green,
     borderRadius: 2,
+    height: '100%',
+  },
+  track: {
+    backgroundColor: COLORS.border,
+    borderRadius: 2,
+    height: 4,
+    overflow: 'hidden',
   },
 });

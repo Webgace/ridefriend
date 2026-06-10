@@ -6,7 +6,7 @@
       "ES2020"
     ],
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

@@ -62,18 +62,18 @@ export default class ErrorBoundary extends React.Component<
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#1A1A1A' },
-  content: { padding: 18, paddingTop: 60, paddingBottom: 60 },
-  title: { color: '#FF6B6B', fontSize: 22, fontWeight: '700', marginBottom: 4 },
-  subtitle: { color: '#FFFFFF', fontSize: 13, marginBottom: 20 },
+  content: { padding: 18, paddingBottom: 60, paddingTop: 60 },
+  error: { color: '#FFFFFF', fontFamily: 'monospace', fontSize: 14 },
+  root: { backgroundColor: '#1A1A1A', flex: 1 },
   sectionTitle: {
     color: '#FFD166',
     fontSize: 12,
     fontWeight: '700',
-    marginTop: 18,
     marginBottom: 6,
+    marginTop: 18,
     textTransform: 'uppercase',
   },
-  error: { color: '#FFFFFF', fontSize: 14, fontFamily: 'monospace' },
-  stack: { color: '#CCCCCC', fontSize: 11, fontFamily: 'monospace', lineHeight: 14 },
+  stack: { color: '#CCCCCC', fontFamily: 'monospace', fontSize: 11, lineHeight: 14 },
+  subtitle: { color: '#FFFFFF', fontSize: 13, marginBottom: 20 },
+  title: { color: '#FF6B6B', fontSize: 22, fontWeight: '700', marginBottom: 4 },
 });

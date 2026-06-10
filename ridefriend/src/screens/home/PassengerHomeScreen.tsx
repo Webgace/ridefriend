@@ -37,8 +37,14 @@ export default function PassengerHomeScreen() {
   const { config } = useMarketStore();
   const { user } = useAuthStore();
   const showToast = useUiHostStore((s) => s.showToast);
-  const { myLocation, nearestStop, startPassengerMode, isTracking, getCurrentLocationOnce } =
-    useLocation();
+  const {
+    myLocation,
+    nearestStop,
+    locationLabel,
+    startPassengerMode,
+    isTracking,
+    getCurrentLocationOnce,
+  } = useLocation();
   const myCoords = useMemo(
     () => (myLocation ? { lat: myLocation.lat, lng: myLocation.lng } : null),
     [myLocation],
@@ -54,7 +60,7 @@ export default function PassengerHomeScreen() {
   const [waitingFor, setWaitingFor] = useState<string | undefined>(undefined);
 
   // Conta há quanto tempo o utilizador está na paragem actual. Reinicia ao mudar de paragem.
-  const stopName = nearestStop?.name ?? null;
+  const stopName = locationLabel;
   const arrivalAtStopRef = useRef<number | null>(null);
   const lastStopNameRef = useRef<string | null>(null);
   useEffect(() => {
@@ -166,7 +172,7 @@ export default function PassengerHomeScreen() {
         ListHeaderComponent={
           <View style={styles.header}>
             <HeroLocationCard
-              stopName={nearestStop?.name ?? null}
+              stopName={locationLabel}
               waitingFor={waitingFor}
               nearbyCount={nearbyDrivers.length}
               temperatureC={temperatureC}
@@ -217,7 +223,7 @@ export default function PassengerHomeScreen() {
       <RideConfirmBottomSheet
         visible={selectedDriver !== null}
         driver={selectedDriver}
-        stopName={nearestStop?.name ?? null}
+        stopName={locationLabel}
         destinationArea={undefined}
         onCancel={() => setSelectedDriver(null)}
         onConfirm={handleConfirm}
@@ -228,57 +234,57 @@ export default function PassengerHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-  },
-  header: {
-    gap: 14,
-    paddingTop: 12,
-  },
   alert: {
     marginTop: 4,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  sectionTitle: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 17,
-    color: COLORS.text,
-  },
   counterPill: {
     backgroundColor: COLORS.navy,
+    borderRadius: 999,
     paddingHorizontal: 9,
     paddingVertical: 3,
-    borderRadius: 999,
   },
   counterText: {
     color: COLORS.white,
     fontFamily: FONTS.bodySemi,
     fontSize: 11,
   },
-  separator: {
-    height: 10,
-  },
-  footerSection: {
-    marginTop: 18,
-    gap: 8,
-  },
   empty: {
-    paddingVertical: 32,
     alignItems: 'center',
+    paddingVertical: 32,
   },
   emptyText: {
     color: COLORS.text2,
     fontFamily: FONTS.bodyRegular,
     fontSize: 14,
+  },
+  footerSection: {
+    gap: 8,
+    marginTop: 18,
+  },
+  header: {
+    gap: 14,
+    paddingTop: 12,
+  },
+  listContent: {
+    paddingBottom: 100,
+    paddingHorizontal: 16,
+  },
+  safe: {
+    backgroundColor: COLORS.surface,
+    flex: 1,
+  },
+  sectionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  sectionTitle: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 17,
+  },
+  separator: {
+    height: 10,
   },
 });

@@ -107,46 +107,46 @@ function ActionRow({ icon, label, onPress }: RowProps) {
 }
 
 const styles = StyleSheet.create({
+  iconWrap: {
+    alignItems: 'center',
+    width: 28,
+  },
+  label: {
+    color: COLORS.text,
+    fontFamily: FONTS.soraBold,
+    fontSize: 15,
+  },
   overlay: {
-    flex: 1,
     backgroundColor: 'rgba(13,31,56,0.35)',
+    flex: 1,
     justifyContent: 'flex-end',
+  },
+  pressed: { backgroundColor: COLORS.gray100 },
+  row: {
+    alignItems: 'center',
+    borderRadius: 12,
+    flexDirection: 'row',
+    gap: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   sheet: {
     backgroundColor: COLORS.white,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
-    paddingTop: 14,
     paddingBottom: 28,
     paddingHorizontal: 6,
+    paddingTop: 14,
   },
   title: {
+    borderBottomColor: COLORS.border,
+    borderBottomWidth: 1,
+    color: COLORS.text3,
     fontFamily: FONTS.soraBold,
     fontSize: 13,
-    color: COLORS.text3,
-    paddingHorizontal: 18,
-    paddingBottom: 8,
-    paddingTop: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
     marginBottom: 6,
+    paddingBottom: 8,
+    paddingHorizontal: 18,
+    paddingTop: 4,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 16,
-    borderRadius: 12,
-  },
-  iconWrap: {
-    width: 28,
-    alignItems: 'center',
-  },
-  label: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 15,
-    color: COLORS.text,
-  },
-  pressed: { backgroundColor: COLORS.gray100 },
 });

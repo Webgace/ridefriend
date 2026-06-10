@@ -9,7 +9,14 @@ export type AppConfigKey =
   | 'support_email'
   | 'privacy_email'
   | 'privacy_url'
-  | 'terms_url';
+  | 'terms_url'
+  // Canal usado pelo Supabase Auth → Twilio Verify para entregar o OTP. Aceita
+  // 'sms' ou 'whatsapp' (case-insensitive). O dashboard precisa de ter o canal
+  // correspondente activo + número WhatsApp Business aprovado.
+  | 'otp_channel'
+  // CSV de emails sempre promovidos a is_admin. O trigger ensure_admin_email()
+  // aplica esta lista no INSERT/UPDATE da tabela users.
+  | 'admin_emails';
 
 export type AppConfigMap = Partial<Record<AppConfigKey, string | null>>;
 
@@ -19,6 +26,8 @@ const KNOWN_KEYS: AppConfigKey[] = [
   'privacy_email',
   'privacy_url',
   'terms_url',
+  'otp_channel',
+  'admin_emails',
 ];
 
 let inMemoryCache: AppConfigMap | null = null;

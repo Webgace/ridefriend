@@ -19,6 +19,7 @@ import { useAuthStore } from '@store/authStore';
 import { useUiHostStore } from '@store/uiHostStore';
 import { useMarket } from '@hooks/useMarket';
 import { toE164 } from '@utils/phone';
+import { getInviteUrl } from '@utils/invite';
 import { ContactGroup } from '@types/index';
 
 type Tab = 'agenda' | 'invite' | 'search';
@@ -65,10 +66,7 @@ export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
   const [searchResult, setSearchResult] = useState<PhoneMatch | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
 
-  const inviteUrl = useMemo(
-    () => (user?.id ? `https://ridefriend.app/invite/${user.id}` : 'https://ridefriend.app'),
-    [user?.id],
-  );
+  const inviteUrl = useMemo(() => getInviteUrl(user?.id), [user?.id]);
 
   const addContactRow = useCallback(
     async (contactUserId: string, contactName: string) => {
@@ -461,122 +459,122 @@ export default function AddContactSheet({ visible, onClose, onAdded }: Props) {
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(13,31,56,0.55)', justifyContent: 'flex-end' },
+  agendaName: { color: COLORS.text, fontFamily: FONTS.bodySemi, fontSize: 14 },
+  agendaPhone: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 12 },
+  agendaRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 4,
+    paddingVertical: 10,
+  },
+  closeBtn: { alignItems: 'center', paddingVertical: 10 },
+  closeBtnText: { color: COLORS.text2, fontFamily: FONTS.bodySemi, fontSize: 13 },
+  disabled: { opacity: 0.6 },
+  error: { color: COLORS.red, fontFamily: FONTS.bodyRegular, fontSize: 13, padding: 8 },
+  groupChip: { borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  groupChipText: { fontFamily: FONTS.bodySemi, fontSize: 12 },
+
+  groupChips: { flexDirection: 'row', gap: 6 },
+  groupRow: { gap: 6 },
+  groupRowLabel: { color: COLORS.text2, fontFamily: FONTS.bodySemi, fontSize: 12 },
+  handle: { alignSelf: 'center', backgroundColor: COLORS.gray200, borderRadius: 2, height: 4, width: 40 },
+  input: {
+    backgroundColor: COLORS.gray50,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    borderWidth: 1,
+    color: COLORS.text,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+
+  inviteUrl: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 12 },
+
+  onAppBadge: { backgroundColor: COLORS.greenLight, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
+  onAppBadgeText: { color: COLORS.green, fontFamily: FONTS.bodySemi, fontSize: 11 },
+  overlay: { backgroundColor: 'rgba(13,31,56,0.55)', flex: 1, justifyContent: 'flex-end' },
+  phantomBadge: {
+    backgroundColor: COLORS.amber,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  phantomBadgeText: { color: COLORS.white, fontFamily: FONTS.bodySemi, fontSize: 11 },
+  phantomBody: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  phantomCard: {
+    backgroundColor: '#FEF7E6',
+    borderRadius: 14,
+    gap: 10,
+    marginTop: 4,
+    padding: 14,
+  },
+
+  phantomPhoneInline: { color: COLORS.text, fontFamily: FONTS.bodySemi },
+  phantomTitle: { color: COLORS.text, fontFamily: FONTS.soraBold, fontSize: 13 },
+  pressed: { opacity: 0.85 },
+  primaryBtn: { alignItems: 'center', backgroundColor: COLORS.navy, borderRadius: 14, paddingVertical: 13 },
+
+  primaryBtnInline: {
+    alignItems: 'center',
+    backgroundColor: COLORS.navy,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  primaryBtnText: { color: COLORS.white, fontFamily: FONTS.soraBold, fontSize: 13 },
+  qrFallback: {
+    alignItems: 'center',
+    borderColor: COLORS.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    height: 180,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    width: 180,
+  },
+
+  qrFallbackText: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 12, textAlign: 'center' },
+  searchName: { color: COLORS.text, fontFamily: FONTS.bodySemi, fontSize: 14 },
+  searchPhone: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 12 },
+  searchResult: {
+    alignItems: 'center',
+    backgroundColor: COLORS.gray50,
+    borderRadius: 14,
+    flexDirection: 'row',
+    gap: 10,
+    padding: 12,
+  },
   sheet: {
     backgroundColor: COLORS.white,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    padding: 20,
-    paddingBottom: 32,
     gap: 12,
     maxHeight: '92%',
+    padding: 20,
+    paddingBottom: 32,
   },
-  handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: COLORS.gray200 },
-  title: { fontFamily: FONTS.soraBold, fontSize: 20, color: COLORS.text },
-  tabs: { flexDirection: 'row', gap: 6 },
+
   tab: {
-    flex: 1,
-    paddingVertical: 9,
-    borderRadius: 999,
     alignItems: 'center',
     backgroundColor: COLORS.gray100,
+    borderRadius: 999,
+    flex: 1,
+    paddingVertical: 9,
   },
   tabActive: { backgroundColor: COLORS.navy },
-  tabText: { fontFamily: FONTS.bodySemi, fontSize: 12, color: COLORS.text2 },
-  tabTextActive: { color: COLORS.white },
-
-  groupRow: { gap: 6 },
-  groupRowLabel: { fontFamily: FONTS.bodySemi, fontSize: 12, color: COLORS.text2 },
-  groupChips: { flexDirection: 'row', gap: 6 },
-  groupChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
-  groupChipText: { fontFamily: FONTS.bodySemi, fontSize: 12 },
-
   tabContent: { paddingTop: 4 },
 
-  agendaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    gap: 10,
-  },
-  agendaName: { fontFamily: FONTS.bodySemi, fontSize: 14, color: COLORS.text },
-  agendaPhone: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2 },
-  onAppBadge: { backgroundColor: COLORS.greenLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  onAppBadgeText: { fontFamily: FONTS.bodySemi, fontSize: 11, color: COLORS.green },
-  phantomBadge: {
-    backgroundColor: COLORS.amber,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  phantomBadgeText: { fontFamily: FONTS.bodySemi, fontSize: 11, color: COLORS.white },
+  tabText: { color: COLORS.text2, fontFamily: FONTS.bodySemi, fontSize: 12 },
+  tabTextActive: { color: COLORS.white },
 
-  phantomCard: {
-    backgroundColor: '#FEF7E6',
-    borderRadius: 14,
-    padding: 14,
-    gap: 10,
-    marginTop: 4,
-  },
-  phantomTitle: { fontFamily: FONTS.soraBold, fontSize: 13, color: COLORS.text },
-  phantomBody: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 12,
-    color: COLORS.text2,
-    lineHeight: 17,
-  },
-  phantomPhoneInline: { fontFamily: FONTS.bodySemi, color: COLORS.text },
-
-  inviteUrl: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2 },
-  qrFallback: {
-    width: 180,
-    height: 180,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  qrFallbackText: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2, textAlign: 'center' },
-
-  input: {
-    backgroundColor: COLORS.gray50,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  primaryBtn: { backgroundColor: COLORS.navy, paddingVertical: 13, borderRadius: 14, alignItems: 'center' },
-  primaryBtnInline: {
-    backgroundColor: COLORS.navy,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  primaryBtnText: { color: COLORS.white, fontFamily: FONTS.soraBold, fontSize: 13 },
-  disabled: { opacity: 0.6 },
-
-  searchResult: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: COLORS.gray50,
-    padding: 12,
-    borderRadius: 14,
-  },
-  searchName: { fontFamily: FONTS.bodySemi, fontSize: 14, color: COLORS.text },
-  searchPhone: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2 },
-
-  closeBtn: { paddingVertical: 10, alignItems: 'center' },
-  closeBtnText: { color: COLORS.text2, fontFamily: FONTS.bodySemi, fontSize: 13 },
-
-  error: { color: COLORS.red, fontFamily: FONTS.bodyRegular, fontSize: 13, padding: 8 },
-  pressed: { opacity: 0.85 },
+  tabs: { flexDirection: 'row', gap: 6 },
+  title: { color: COLORS.text, fontFamily: FONTS.soraBold, fontSize: 20 },
 });

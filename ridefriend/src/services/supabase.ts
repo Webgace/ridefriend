@@ -61,12 +61,17 @@ export async function signOut() {
 }
 
 /**
- * Sign in with phone
+ * Sign in with phone. `channel` controla SMS vs WhatsApp — requer Twilio Verify
+ * configurado no dashboard Supabase com canal WhatsApp aprovado pela Meta.
  */
-export async function signInWithPhone(phone: string) {
+export async function signInWithPhone(
+  phone: string,
+  channel: 'sms' | 'whatsapp' = 'sms',
+) {
   try {
     const { data, error } = await supabase.auth.signInWithOtp({
       phone,
+      options: { channel },
     });
 
     if (error) throw error;
@@ -78,7 +83,8 @@ export async function signInWithPhone(phone: string) {
 }
 
 /**
- * Verify OTP
+ * Verify OTP. `type` é sempre 'sms' mesmo quando o canal foi WhatsApp — é a
+ * forma como o Supabase Auth interpreta o token (canal-agnóstico).
  */
 export async function verifyOtp(phone: string, token: string) {
   try {
@@ -92,6 +98,30 @@ export async function verifyOtp(phone: string, token: string) {
     return data;
   } catch (error) {
     console.error('Error verifying OTP:', error);
+    throw error;
+  }
+}
+
+/**
+ * Sign in com Google/Apple via id_token nativo. O token vem do flow nativo
+ * (@react-native-google-signin/google-signin para Google, expo-apple-authentication
+ * para Apple) e é trocado por uma sessão Supabase sem abrir browser.
+ */
+export async function signInWithIdToken(input: {
+  provider: 'google' | 'apple';
+  token: string;
+  nonce?: string;
+}) {
+  try {
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider: input.provider,
+      token: input.token,
+      nonce: input.nonce,
+    });
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error(`Error signing in with ${input.provider}:`, error);
     throw error;
   }
 }

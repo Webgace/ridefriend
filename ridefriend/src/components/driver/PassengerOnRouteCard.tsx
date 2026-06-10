@@ -63,26 +63,26 @@ export default function PassengerOnRouteCard({ passenger, currentRoute, onOffer 
 }
 
 const styles = StyleSheet.create({
+  avatar: { alignItems: 'center', borderRadius: 22, height: 44, justifyContent: 'center', width: 44 },
+  avatarLetter: { fontFamily: FONTS.soraBold, fontSize: 18 },
+  btn: {
+    backgroundColor: COLORS.amber,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  btnText: { color: COLORS.navy, fontFamily: FONTS.soraBold, fontSize: 12 },
   card: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    padding: 12,
+    flexDirection: 'row',
     gap: 12,
+    padding: 12,
   },
-  avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  avatarLetter: { fontFamily: FONTS.soraBold, fontSize: 18 },
+  deviation: { color: COLORS.amber, fontFamily: FONTS.bodySemi, fontSize: 11 },
   info: { flex: 1, gap: 2 },
-  name: { fontFamily: FONTS.bodySemi, fontSize: 14, color: COLORS.text },
-  meta: { fontFamily: FONTS.bodyRegular, fontSize: 12, color: COLORS.text2 },
-  deviation: { fontFamily: FONTS.bodySemi, fontSize: 11, color: COLORS.amber },
-  btn: {
-    backgroundColor: COLORS.amber,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 14,
-  },
-  btnText: { color: COLORS.navy, fontFamily: FONTS.soraBold, fontSize: 12 },
+  meta: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 12 },
+  name: { color: COLORS.text, fontFamily: FONTS.bodySemi, fontSize: 14 },
   pressed: { opacity: 0.85 },
 });

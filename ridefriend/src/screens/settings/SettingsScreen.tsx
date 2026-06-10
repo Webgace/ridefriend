@@ -386,97 +386,97 @@ function Field({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.surface },
-  content: { padding: 16, gap: 20, paddingBottom: 64 },
+  aboutValue: { color: COLORS.text2, fontFamily: FONTS.bodyRegular, fontSize: 14 },
+  content: { gap: 20, padding: 16, paddingBottom: 64 },
 
-  section: { gap: 6 },
-  sectionTitle: {
-    fontFamily: FONTS.soraBold,
-    fontSize: 12,
-    color: COLORS.text2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.06 * 12,
-    paddingHorizontal: 4,
+  field: {
+    borderTopColor: COLORS.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    gap: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
-  sectionHint: {
+  fieldInput: {
+    color: COLORS.text,
+    fontFamily: FONTS.bodyRegular,
+    fontSize: 14,
+    paddingVertical: 4,
+  },
+  fieldLabel: {
+    color: COLORS.text2,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 11,
+    letterSpacing: 0.05 * 11,
+    textTransform: 'uppercase',
+  },
+  pressed: { backgroundColor: COLORS.gray50 },
+
+  radio: {
+    alignItems: 'center',
+    borderColor: COLORS.gray300,
+    borderRadius: 11,
+    borderWidth: 2,
+    height: 22,
+    justifyContent: 'center',
+    width: 22,
+  },
+  radioActive: { borderColor: COLORS.navy },
+  radioDot: { backgroundColor: COLORS.navy, borderRadius: 5, height: 10, width: 10 },
+  row: {
+    alignItems: 'center',
+    borderTopColor: COLORS.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  rowBody: { flex: 1, gap: 2 },
+  rowFirst: { borderTopWidth: 0 },
+  rowIconWrap: {
+    alignItems: 'center',
+    backgroundColor: COLORS.gray100,
+    borderRadius: 10,
+    height: 32,
+    justifyContent: 'center',
+    width: 32,
+  },
+
+  rowLabel: {
+    color: COLORS.text,
+    flex: 1,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 14,
+  },
+  rowRight: { marginLeft: 'auto' },
+  rowSub: {
+    color: COLORS.text2,
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.text2,
-    paddingHorizontal: 4,
-    paddingBottom: 2,
   },
+
+  safe: { backgroundColor: COLORS.surface, flex: 1 },
+  section: { gap: 6 },
   sectionBody: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
     overflow: 'hidden',
   },
 
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.border,
-  },
-  rowFirst: { borderTopWidth: 0 },
-  rowBody: { flex: 1, gap: 2 },
-  rowIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: COLORS.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rowLabel: {
-    flex: 1,
-    fontFamily: FONTS.bodySemi,
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  rowSub: {
+  sectionHint: {
+    color: COLORS.text2,
     fontFamily: FONTS.bodyRegular,
     fontSize: 12,
-    color: COLORS.text2,
+    paddingBottom: 2,
+    paddingHorizontal: 4,
   },
-  rowRight: { marginLeft: 'auto' },
 
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: COLORS.gray300,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioActive: { borderColor: COLORS.navy },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.navy },
-
-  field: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 4,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.border,
-  },
-  fieldLabel: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 11,
+  sectionTitle: {
     color: COLORS.text2,
+    fontFamily: FONTS.soraBold,
+    fontSize: 12,
+    letterSpacing: 0.06 * 12,
+    paddingHorizontal: 4,
     textTransform: 'uppercase',
-    letterSpacing: 0.05 * 11,
   },
-  fieldInput: {
-    fontFamily: FONTS.bodyRegular,
-    fontSize: 14,
-    color: COLORS.text,
-    paddingVertical: 4,
-  },
-
-  aboutValue: { fontFamily: FONTS.bodyRegular, fontSize: 14, color: COLORS.text2 },
-
-  pressed: { backgroundColor: COLORS.gray50 },
 });

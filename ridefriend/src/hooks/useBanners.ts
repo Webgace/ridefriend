@@ -71,7 +71,7 @@ export function useBanners(options: UseBannersOptions = {}) {
     setIsLoading(true);
     setError(null);
     try {
-      let query = supabase
+      const query = supabase
         .from('banners')
         .select(
           'id, title, body, image_url, cta_label, cta_url, market_code, starts_at, ends_at, priority, is_active, created_at, updated_at',

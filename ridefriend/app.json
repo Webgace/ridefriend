@@ -19,6 +19,7 @@
       "supportsTabletMode": true,
       "usesAppleSignIn": true,
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "RideFriend needs access to your location to show nearby drivers and passengers.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "RideFriend needs access to your location to show nearby drivers and passengers.",
         "NSCameraUsageDescription": "RideFriend needs camera access for profile pictures and vehicle photos.",

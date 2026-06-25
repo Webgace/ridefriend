@@ -111,6 +111,12 @@
           "iosUrlScheme": "com.googleusercontent.apps.1027420415056-o7pglmie6v04nmf18p5b802nsjau36tf"
         }
       ]
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1f47c628-5760-4a75-9abf-ccdc9fd9ab48"
+    }
   }
 }

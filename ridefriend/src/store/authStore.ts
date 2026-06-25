@@ -80,6 +80,19 @@ export async function initializeAuthStore() {
     const session = JSON.parse(storedSession) as Session;
     useAuthStore.setState({ session, isAuthenticated: true });
 
+    // Re-hidrata o cliente Supabase: criado sem storage adapter, perde a sessão
+    // em memória a cada arranque. Sem isto, getUser()/inserts protegidos por RLS
+    // falham após reload (ex.: bug "utilizador autenticado não encontrado" no
+    // onboarding). Import dinâmico para evitar ciclo de imports.
+    if (session.access_token && session.refresh_token) {
+      try {
+        const { setSupabaseSession } = await import('@services/supabase');
+        await setSupabaseSession(session);
+      } catch (e) {
+        console.warn('initializeAuthStore: failed to hydrate supabase session', e);
+      }
+    }
+
     // Carrega o perfil. Import dinâmico para evitar ciclo de imports
     // (auth.service.ts importa authStore).
     if (session.user?.id) {

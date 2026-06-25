@@ -48,6 +48,27 @@ export async function getUser() {
 }
 
 /**
+ * Re-hidrata a sessão do cliente Supabase a partir de tokens guardados.
+ *
+ * Necessário porque este cliente é criado sem storage adapter (sessão só em
+ * memória). Após um reload da app — ou um login social seguido de reload antes
+ * de criar perfil — `supabase.auth` fica sem sessão, e qualquer chamada autada
+ * (getUser, inserts protegidos por RLS) falha. O authStore guarda a sessão em
+ * SecureStore; esta função empurra-a de volta para o cliente.
+ */
+export async function setSupabaseSession(tokens: {
+  access_token: string;
+  refresh_token: string;
+}) {
+  const { data, error } = await supabase.auth.setSession({
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
  * Sign out user
  */
 export async function signOut() {

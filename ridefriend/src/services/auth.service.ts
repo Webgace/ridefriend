@@ -7,6 +7,7 @@ import {
   signInWithIdToken,
   signInWithPhone,
   signOut as supabaseSignOut,
+  setSupabaseSession,
   verifyOtp as supabaseVerifyOtp,
   supabase,
 } from '@services/supabase';
@@ -274,7 +275,24 @@ export async function createUserProfile(payload: {
   /** URL do avatar vindo do provider OAuth, se houver. */
   photo_url?: string | null;
 }) {
-  const currentUser = await getUser();
+  let currentUser = await getUser();
+
+  // O cliente Supabase guarda a sessão só em memória (sem storage adapter), por
+  // isso após um reload — ex.: login social → reload → onboarding — `getUser()`
+  // devolve null mesmo com sessão válida no authStore. Re-hidrata o cliente a
+  // partir da sessão guardada e tenta de novo (também garante o JWT para o RLS
+  // do insert abaixo).
+  if (!currentUser) {
+    const storedSession = useAuthStore.getState().session;
+    if (storedSession?.access_token && storedSession?.refresh_token) {
+      try {
+        await setSupabaseSession(storedSession);
+        currentUser = await getUser();
+      } catch (e) {
+        console.error('createUserProfile: failed to rehydrate session', e);
+      }
+    }
+  }
 
   if (!currentUser) {
     throw new Error('Não foi possível encontrar o utilizador autenticado.');
